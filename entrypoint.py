@@ -28,7 +28,7 @@ print('ENV Variables')
 for env_name, env_value in os.environ.items():
     print(f'{env_name} --> {env_value}')
 
-changed_files = get_changed_files(Path(repo_path), os.environ['github.base_ref'])
+changed_files = get_changed_files(Path(repo_path), os.environ['GITHUB_BASE_REF'], os.environ['GITHUB_HEAD_REF'])
 if len(changed_files) == 0:
     sys.exit(0)
 
