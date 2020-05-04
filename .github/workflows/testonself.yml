@@ -20,5 +20,5 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
     - run: |
-    git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
+      git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
     - uses: ./
