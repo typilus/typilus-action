@@ -24,8 +24,7 @@ class TypeSuggestion(NamedTuple):
 # TODO: Get these variables from the environment
 repo_path = "."
 
-
-changed_files = get_changed_files(Path(repo_path), "HEAD~10")
+changed_files = get_changed_files(Path(repo_path), "os.environ['github.base_ref']")
 if len(changed_files) == 0:
     sys.exit(0)
 

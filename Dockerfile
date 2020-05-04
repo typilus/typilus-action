@@ -1,6 +1,10 @@
-FROM python:3.8-alpine
+FROM python:3.8-buster
 
-RUN pip install dpu-utils typed-ast gitpython
+
+RUN apt update && apt -y upgrade
+RUN apt install -y python3-numpy python3-pip
+RUN pip3 install dpu-utils typed-ast gitpython
+
 
 ENV PYTHONPATH=/usr/src/
 

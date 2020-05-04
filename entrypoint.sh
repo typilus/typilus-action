@@ -1,2 +1,1 @@
-
-python /usr/src/entrypoint.py
+python3 /usr/src/entrypoint.py
