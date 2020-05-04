@@ -34,7 +34,7 @@ def get_changed_files(
     assert not repo.bare
 
     diffs = repo.commit(head_sha).diff(
-        repo.commit(base_sha), create_patch=True, ignore_blank_lines=True, ignore_space_at_eol=True
+        repo.commit(base_sha).hexsha, create_patch=True, ignore_blank_lines=True, ignore_space_at_eol=True
     )
     changed_files: Dict[str, Set[int]] = {}
     for diff in diffs:
