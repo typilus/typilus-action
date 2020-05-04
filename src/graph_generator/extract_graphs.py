@@ -26,10 +26,10 @@ class Monitoring:
     def found_error(self, err, trace) -> None:
         self.errors.append([self.file, err, trace])
 
-    def enter_file(self, filename: str) -> None:
+    def enter_file(self, filename) -> None:
         self.file = filename
 
-    def enter_repo(self, repo_name: str) -> None:
+    def enter_repo(self, repo_name) -> None:
         self.current_repo = repo_name
 
 
@@ -53,8 +53,8 @@ def build_graph(
 
 
 def explore_files(
-    root_dir: str,
-    files_to_extract: Set[str],
+    root_dir,
+    files_to_extract,
     monitoring: Monitoring,
     type_lattice: TypeLatticeGenerator,
 ) -> Iterator[Tuple]:
