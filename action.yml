@@ -1,3 +1,4 @@
+# action.yml
 name: 'Typilus Suggest'
 description: 'Suggest Python Type Annotations'
 branding:
@@ -5,7 +6,7 @@ branding:
     color: gray-dark
 inputs:
   path:
-    description: 'File or directory to run typilus on.'
+    description: 'File or directory to run Typilus on.'
     required: false
     default: '.'
 outputs:
