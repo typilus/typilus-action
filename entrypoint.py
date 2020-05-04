@@ -21,8 +21,8 @@ class TypeSuggestion(NamedTuple):
     confidence: float
 
 
-# TODO: Get these variables fromt the environment
-repo_path = "/mnt/c/Users/t-mialla/Source/Repos/pt-gnn/"
+# TODO: Get these variables from the environment
+repo_path = "."
 
 
 changed_files = get_changed_files(Path(repo_path), "HEAD~10")

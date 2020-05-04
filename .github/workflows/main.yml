@@ -1,0 +1,13 @@
+on: [pull_request]
+
+jobs:
+  typilus_suggestion:
+    runs-on: ubuntu-latest
+    name: Sample Typilus action
+    steps:
+      # To use this repository's private action, you must check out the repository
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Suggest Types
+        uses: ./ # Uses an action in the root directory
+        id: testaction
