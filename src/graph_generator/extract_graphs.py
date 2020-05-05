@@ -83,7 +83,7 @@ def explore_files(
 def extract_graphs(
     root_dir, typing_rules_path, files_to_extract: Set[str], target_folder
 ):
-    start_time = time.clock()
+    start_time = time.time()
     print("Traversing folders ...")
     monitoring = Monitoring()
     type_lattice = TypeLatticeGenerator(typing_rules_path)
@@ -121,7 +121,7 @@ def extract_graphs(
             except:
                 pass
 
-    print("\nGraph Execution in: ", time.clock() - start_time, " seconds")
+    print("\nGraph Execution in: ", time.time() - start_time, " seconds")
 
 
 if __name__ == "__main__":
