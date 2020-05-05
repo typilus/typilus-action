@@ -26,6 +26,7 @@ class TypeSuggestion(NamedTuple):
 
 
 assert os.environ["GITHUB_EVENT_NAME"] == "pull_request"
+github_token = os.environ["GITHUB_TOKEN"]
 
 with open(os.environ["GITHUB_EVENT_PATH"]) as f:
     print("Event data:")
@@ -103,8 +104,6 @@ with TemporaryDirectory() as out_dir:
     print("# Suggestions:", len(type_suggestions))
     for suggestion in type_suggestions:
         print(suggestion)
-
-    github_token = os.environ["GITHUB_TOKEN"]
 
     g = Github(github_token)
     repo = g.get_repo(os.environ["GITHUB_REPOSITORY"])
