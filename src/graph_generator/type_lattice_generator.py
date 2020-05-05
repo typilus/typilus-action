@@ -16,7 +16,6 @@ from .typeparsing import PruneAnnotationVisitor
 from .typeparsing import AliasReplacementVisitor
 from .typeparsing.rewriterules import RemoveStandAlones
 from .typeparsing.rewriterules import RemoveRecursiveGenerics
-from .typeparsing.rewriterules import RemoveUnionWithAnys
 from .typeparsing.rewriterules import RemoveGenericWithAnys
 
 
@@ -72,7 +71,6 @@ class TypeLatticeGenerator:
 
         self.__rewrites_verbose_annotations = RewriteRuleVisitor(
             [
-                RemoveUnionWithAnys(),
                 RemoveStandAlones(),
                 RemoveRecursiveGenerics(),
                 RemoveGenericWithAnys(),
