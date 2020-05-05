@@ -1,11 +1,13 @@
 #!/bin/python
 import os
 from glob import iglob
+import json
 from pathlib import Path
 import sys
 from tempfile import TemporaryDirectory
 from typing import Tuple, NamedTuple, List
 
+from github import Github
 from dpu_utils.utils import load_jsonl_gz
 
 from changeutils import get_changed_files
@@ -21,8 +23,14 @@ class TypeSuggestion(NamedTuple):
     confidence: float
 
 
-# TODO: Get these variables from the environment
-repo_path = "."
+assert os.environ["GITHUB_EVENT_NAME"] == "pull_request"
+
+with open(os.environ["GITHUB_EVENT_PATH"]) as f:
+    print("Event data:")
+    event_data = json.load(f)
+    print(json.dumps(event_data, indent=3))
+
+repo_path = "."  # TODO: Is this always true?
 
 print("ENV Variables")
 for env_name, env_value in os.environ.items():
@@ -40,7 +48,7 @@ monitoring = Monitoring()
 
 with TemporaryDirectory() as out_dir:
     typing_rules_path = os.path.join(
-        os.path.dirname(__file__), "src", "metadata", "typingRules.json"
+        os.path.dirname(__file__), "metadata", "typingRules.json"
     )
     extract_graphs(
         repo_path,
@@ -74,3 +82,6 @@ with TemporaryDirectory() as out_dir:
     # Add PR comments
     for suggestion in type_suggestions:
         print(suggestion)
+
+    g = Github(os.environ["GITHUB_TOKEN"])
+    repo = g.get_repo(os.environ["GITHUB_REPOSITORY"])
