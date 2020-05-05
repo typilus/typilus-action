@@ -19,7 +19,8 @@ from graph_generator.extract_graphs import extract_graphs, Monitoring
 class TypeSuggestion(NamedTuple):
     filepath: str
     name: str
-    location: Tuple[int, int]
+    file_location: Tuple[int, int]
+    diff_location: int
     suggestion: str
     confidence: float
 
@@ -37,11 +38,18 @@ print("ENV Variables")
 for env_name, env_value in os.environ.items():
     print(f"{env_name} --> {env_value}")
 
-changed_files = get_changed_files(
-    Path(repo_path),
-    "origin/" + os.environ["GITHUB_HEAD_REF"],
-    "origin/" + os.environ["GITHUB_BASE_REF"],
+print("Diff URL:", event_data["pull_request"]["url"])
+r = requests.get(
+    event_data["pull_request"]["url"],
+    headers={
+        "authorization": f"Bearer {github_token}",
+        "Accept": "application/vnd.github.v3.diff",
+    },
 )
+print("Diff GET Status Code: ", r.status_code)
+print(r.text)
+
+changed_files = get_changed_files(r.text)
 if len(changed_files) == 0:
     print("No changes found.")
     sys.exit(0)
@@ -74,12 +82,20 @@ with TemporaryDirectory() as out_dir:
                     continue  # Do not suggest annotations on variables.
                 lineno, colno = node_data["location"]
                 if (
-                    lineno in changed_files[filepath]
+                    any(lineno == e.file_line_no for e in changed_files[filepath])
                     and node_data["annotation"] is None
                 ):
+                    diff_location = [
+                        e for e in changed_files[filepath] if lineno == e.file_line_no
+                    ][0].diff_line_no
                     type_suggestions.append(
                         TypeSuggestion(
-                            filepath, node_data["name"], (lineno, colno), "DummyType", 1
+                            filepath,
+                            node_data["name"],
+                            (lineno, colno),
+                            diff_location,
+                            "DummyType",
+                            1,
                         )
                     )
 
@@ -90,15 +106,5 @@ with TemporaryDirectory() as out_dir:
 
     github_token = os.environ["GITHUB_TOKEN"]
 
-    print("Diff URL:", event_data["pull_request"]["url"])
-    r = requests.get(
-        event_data["pull_request"]["url"],
-        headers={
-            "authorization": f"Bearer {github_token}",
-            "Accept": "application/vnd.github.v3.diff",
-        },
-    )
-    print("Status Code: ", r.status_code)
-    print(r.text)
     g = Github(github_token)
     repo = g.get_repo(os.environ["GITHUB_REPOSITORY"])
