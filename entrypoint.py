@@ -90,9 +90,9 @@ with TemporaryDirectory() as out_dir:
 
     github_token = os.environ["GITHUB_TOKEN"]
 
-    print("Diff URL:", event_data["pull_request"]["diff_url"])
+    print("Diff URL:", event_data["pull_request"]["url"])
     r = requests.get(
-        event_data["pull_request"]["diff_url"],
+        event_data["pull_request"]["url"],
         headers={
             "authorization": f"Bearer {github_token}",
             "Accept": "application/vnd.github.v3.diff",
