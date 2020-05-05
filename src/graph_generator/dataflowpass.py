@@ -57,6 +57,7 @@ class DataflowPass(NodeVisitor):
 
         self.__break_uses: Dict[Any, Set[Any]] = defaultdict(set)
         self.__continue_uses: Dict[Any, Set[Any]] = defaultdict(set)
+            
         self.__return_uses: Dict[Any, Set[Any]] = defaultdict(set)
 
     def __visit_variable_like(self, name: Union[str, AST], parent_node: Optional[AST]):
