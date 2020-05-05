@@ -8,6 +8,7 @@ from tempfile import TemporaryDirectory
 from typing import Tuple, NamedTuple, List
 
 from github import Github
+import requests
 from dpu_utils.utils import load_jsonl_gz
 
 from changeutils import get_changed_files
@@ -42,7 +43,10 @@ changed_files = get_changed_files(
     "origin/" + os.environ["GITHUB_HEAD_REF"],
 )
 if len(changed_files) == 0:
+    print("No changes found.")
     sys.exit(0)
+
+print("Changed files: ", json.dumps(changed_files, indent=2))
 
 monitoring = Monitoring()
 
@@ -80,8 +84,18 @@ with TemporaryDirectory() as out_dir:
                     )
 
     # Add PR comments
+    print("# Suggestions:", len(type_suggestions))
     for suggestion in type_suggestions:
         print(suggestion)
 
-    g = Github(os.environ["GITHUB_TOKEN"])
+    github_token = os.environ["GITHUB_TOKEN"]
+
+    print("Diff URL:", event_data["pull_request"]["diff_url"])
+    r = requests.get(
+        event_data["pull_request"]["diff_url"],
+        headers={"authorization": f"Bearer {github_token}",},
+    )
+    print("Status Code: ", r.status_code)
+    print(r.text)
+    g = Github(github_token)
     repo = g.get_repo(os.environ["GITHUB_REPOSITORY"])

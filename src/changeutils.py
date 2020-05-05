@@ -1,7 +1,7 @@
 from collections import defaultdict
 from pathlib import Path
 import re
-from typing import Dict, Set, Tuple, Optional
+from typing import Dict, Set
 
 from git import Repo
 
