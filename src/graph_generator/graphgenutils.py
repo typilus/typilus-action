@@ -20,7 +20,7 @@ class TokenNode:
     """A wrapper around token nodes, such that an object-identity is used for comparing nodes."""
 
     def __init__(
-        self, token: str, lineno: Optional[int] = None, col_offset: Optional[int] = None
+        self, token, lineno = None, col_offset: Optional[int] = None
     ):
         assert isinstance(token, str)
         self.token = token
@@ -32,7 +32,7 @@ class TokenNode:
 
 
 class StrSymbol:
-    def __init__(self, name: str):
+    def __init__(self, name):
         self.name = name
 
     def __hash__(self):
