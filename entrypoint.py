@@ -7,13 +7,12 @@ import sys
 from tempfile import TemporaryDirectory
 from typing import Tuple, NamedTuple, List
 
-from github import Github
 import requests
 from dpu_utils.utils import load_jsonl_gz
 
 from changeutils import get_changed_files
-from graph_generator.type_lattice_generator import TypeLatticeGenerator
 from graph_generator.extract_graphs import extract_graphs, Monitoring
+
 
 
 class TypeSuggestion(NamedTuple):
@@ -78,7 +77,6 @@ with TemporaryDirectory() as out_dir:
         for graph in load_jsonl_gz(datafile_path):
             filepath = graph["filename"]
             print(f'Reading graph for {filepath}.')
-            assert filepath not in changed_files
 
             for _, node_data in graph["supernodes"].items():
                 if node_data["type"] == "variable":
@@ -107,5 +105,20 @@ with TemporaryDirectory() as out_dir:
     for suggestion in type_suggestions:
         print(suggestion)
 
-    g = Github(github_token)
-    repo = g.get_repo(os.environ["GITHUB_REPOSITORY"])
+    comment_url = event_data["pull_request"]["comments_url"]
+    commit_id = event_data["pull_request"]["sha"]
+    for suggestion in type_suggestions:
+        data = {
+            "path": suggestion.filepath,
+            "position": suggestion.diff_location,
+            "side": "RIGHT",
+            "commit_id": commit_id,
+            "body": f"What about annotating `{suggestion.name}` with the type `{suggestion.suggestion}`?"
+        }
+        headers={
+            "authorization": f"Bearer {github_token}",
+        "Accept": "application/vnd.github.v3.raw+json",
+         }
+        r = requests.post(data, headers=headers)
+        print(f"Data: {data}. Status Code: {r.status_code}. Text: {r.text}")
+
