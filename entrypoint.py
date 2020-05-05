@@ -117,8 +117,8 @@ with TemporaryDirectory() as out_dir:
         }
         headers={
             "authorization": f"Bearer {github_token}",
-        "Accept": "application/vnd.github.v3.raw+json",
+            "Accept": "application/vnd.github.v3.raw+json",
          }
-        r = requests.post(comment_url, data=data, headers=headers)
+        r = requests.post(comment_url, data=json.dumps(data), headers=headers)
         print(f"Data: {data}. Status Code: {r.status_code}. Text: {r.text}")
 
