@@ -111,7 +111,7 @@ with TemporaryDirectory() as out_dir:
     for suggestion in type_suggestions:
         data = {
             "path": suggestion.filepath[1:],  # No slash in the beginning
-            "position": suggestion.diff_location,
+            "line": suggestion.diff_location,
             "side": "RIGHT",
             "commit_id": commit_id,
             "body": f"What about annotating `{suggestion.name}` with the type `{suggestion.suggestion}`?"
