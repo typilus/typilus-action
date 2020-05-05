@@ -46,7 +46,7 @@ if len(changed_files) == 0:
     print("No changes found.")
     sys.exit(0)
 
-print("Changed files: ", json.dumps(changed_files, indent=2))
+print("Changed files: ", list(changed_files))
 
 monitoring = Monitoring()
 
