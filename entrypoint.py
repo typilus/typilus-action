@@ -106,7 +106,7 @@ with TemporaryDirectory() as out_dir:
         print(suggestion)
 
     comment_url = event_data["pull_request"]["comments_url"]
-    commit_id = event_data["pull_request"]["sha"]
+    commit_id = event_data["pull_request"]["head"]["sha"]
     for suggestion in type_suggestions:
         data = {
             "path": suggestion.filepath,

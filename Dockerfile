@@ -9,6 +9,7 @@ RUN pip3 install torch-scatter==2.0.4+cpu -f https://pytorch-geometric.com/whl/t
 
 
 ENV PYTHONPATH=/usr/src/
+ENV PYTHONUNBUFFERED=1
 
 COPY src /usr/src
 COPY entrypoint.py /usr/src/entrypoint.py
