@@ -74,8 +74,10 @@ with TemporaryDirectory() as out_dir:
     # TODO: Dummy code below
     type_suggestions: List[TypeSuggestion] = []
     for datafile_path in iglob(os.path.join(out_dir, "*.jsonl.gz")):
+        print(f'Looking into {datafile_path}...')
         for graph in load_jsonl_gz(datafile_path):
             filepath = graph["filename"]
+            print(f'Reading graph for {filepath}.')
             assert filepath not in changed_files
 
             for _, node_data in graph["supernodes"].items():
