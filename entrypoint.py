@@ -110,7 +110,7 @@ with TemporaryDirectory() as out_dir:
     commit_id = event_data["pull_request"]["head"]["sha"]
     for suggestion in type_suggestions:
         data = {
-            "path": suggestion.filepath,
+            "path": suggestion.filepath[1:],  # No slash in the beginning
             "position": suggestion.diff_location,
             "side": "RIGHT",
             "commit_id": commit_id,
