@@ -38,17 +38,39 @@ def get_changed_files(diff: str, suffix=".py") -> Dict[str, Set[Edit]]:
             continue
         file_diff_lines = file_diff.splitlines()
 
-        assert file_diff_lines[1].startswith("index")
-        assert file_diff_lines[2].startswith("--- a/")
-        assert file_diff_lines[3].startswith("+++ b/")
-        target_filepath = file_diff_lines[3][len("+++ b") :]
+        if file_diff_lines[1].startswith("deleted"):
+            continue
+        elif file_diff_lines[1].startswith("new file"):
+            assert file_diff_lines[2].startswith("index")
+            assert file_diff_lines[3].startswith("---")
+            assert file_diff_lines[4].startswith("+++ b/")
+            target_filepath = file_diff_lines[4][len("+++ b") :]
+            remaining_lines = file_diff_lines[5:]
+            diff_line_no += 5
+        elif file_diff_lines[1].startswith("index"):
+            assert file_diff_lines[2].startswith("--- a/")
+            assert file_diff_lines[3].startswith("+++ b/")
+            target_filepath = file_diff_lines[3][len("+++ b") :]
+            remaining_lines = file_diff_lines[4:]
+            diff_line_no += 4
+        elif file_diff_lines[1].startswith("similarity"):
+             assert file_diff_lines[2].startswith("rename")
+             assert file_diff_lines[3].startswith("rename")
+             assert file_diff_lines[4].startswith("index")
+             assert file_diff_lines[5].startswith("--- a/")
+             assert file_diff_lines[6].startswith("+++ b/")
+             target_filepath = file_diff_lines[6][len("+++ b") :]
+             remaining_lines = file_diff_lines[7:]
+             diff_line_no += 7
+        else:
+            raise Exception(file_diff)
 
         if target_filepath.endswith(suffix):
             assert target_filepath not in changed_files
             changed_files[target_filepath] = get_line_ranges_of_interest(
-                file_diff_lines[4:], diff_line_no + 4
+                remaining_lines, diff_line_no
             )
 
-        diff_line_no += len(file_diff_lines)
+        diff_line_no += len(remaining_lines)
 
     return changed_files
