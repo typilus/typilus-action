@@ -39,8 +39,8 @@ for env_name, env_value in os.environ.items():
 
 changed_files = get_changed_files(
     Path(repo_path),
-    "origin/" + os.environ["GITHUB_BASE_REF"],
     "origin/" + os.environ["GITHUB_HEAD_REF"],
+    "origin/" + os.environ["GITHUB_BASE_REF"],
 )
 if len(changed_files) == 0:
     print("No changes found.")
@@ -93,7 +93,10 @@ with TemporaryDirectory() as out_dir:
     print("Diff URL:", event_data["pull_request"]["diff_url"])
     r = requests.get(
         event_data["pull_request"]["diff_url"],
-        headers={"authorization": f"Bearer {github_token}",},
+        headers={
+            "authorization": f"Bearer {github_token}",
+            "Accept": "application/vnd.github.v3.diff",
+        },
     )
     print("Status Code: ", r.status_code)
     print(r.text)
