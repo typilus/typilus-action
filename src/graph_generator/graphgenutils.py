@@ -19,9 +19,7 @@ class EdgeType(Enum):
 class TokenNode:
     """A wrapper around token nodes, such that an object-identity is used for comparing nodes."""
 
-    def __init__(
-        self, token: str, lineno: Optional[int] = None, col_offset: Optional[int] = None
-    ):
+    def __init__(self, token: str, lineno: Optional[int] = None, col_offset: Optional[int] = None):
         assert isinstance(token, str)
         self.token = token
         self.lineno = lineno

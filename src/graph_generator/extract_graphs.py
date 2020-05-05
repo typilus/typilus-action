@@ -80,9 +80,7 @@ def explore_files(
     type_lattice.build_graph()
 
 
-def extract_graphs(
-    root_dir, typing_rules_path, files_to_extract: Set[str], target_folder
-):
+def extract_graphs(root_dir, typing_rules_path, files_to_extract: Set[str], target_folder):
     start_time = time.time()
     print("Traversing folders ...")
     monitoring = Monitoring()
@@ -104,8 +102,7 @@ def extract_graphs(
     print("Building and saving the type graph...")
     type_lattice.build_graph()
     save_jsonl_gz(
-        [type_lattice.return_json()],
-        os.path.join(target_folder, "_type_lattice.json.gz"),
+        [type_lattice.return_json()], os.path.join(target_folder, "_type_lattice.json.gz"),
     )
 
     print("Done.")

@@ -20,18 +20,14 @@ class AliasReplacementVisitor(TypeAnnotationVisitor):
     def __init__(self, replacement_map: Dict[TypeAnnotationNode, TypeAnnotationNode]):
         self.__replacement_map = replacement_map
 
-    def __replace_full(
-        self, node: TypeAnnotationNode
-    ) -> Tuple[TypeAnnotationNode, bool]:
+    def __replace_full(self, node: TypeAnnotationNode) -> Tuple[TypeAnnotationNode, bool]:
         replaced = False
         seen_names = {node}
         while node in self.__replacement_map:
             node = self.__replacement_map[node]
             replaced = True
             if node in seen_names:
-                print(
-                    f"WARNING: Circle between {seen_names}. Picking the {node} for now."
-                )
+                print(f"WARNING: Circle between {seen_names}. Picking the {node} for now.")
                 break
             else:
                 seen_names.add(node)

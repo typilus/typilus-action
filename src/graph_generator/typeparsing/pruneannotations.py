@@ -33,17 +33,12 @@ class PruneAnnotationVisitor(TypeAnnotationVisitor):
             pruned_slice = node.slice.accept_visitor(self, current_remaining_depth - 1)
 
         return SubscriptAnnotationNode(
-            value=node.value.accept_visitor(self, current_remaining_depth - 1),
-            slice=pruned_slice,
+            value=node.value.accept_visitor(self, current_remaining_depth - 1), slice=pruned_slice,
         )
 
-    def visit_tuple_annotation(
-        self, node: TupleAnnotationNode, current_remaining_depth: int
-    ):
+    def visit_tuple_annotation(self, node: TupleAnnotationNode, current_remaining_depth: int):
         if len(node.elements) > self.__max_list_size:
-            elements = node.elements[: self.__max_list_size - 1] + (
-                ElipsisAnnotationNode(),
-            )
+            elements = node.elements[: self.__max_list_size - 1] + (ElipsisAnnotationNode(),)
         else:
             elements = node.elements
 
@@ -54,22 +49,16 @@ class PruneAnnotationVisitor(TypeAnnotationVisitor):
         elif current_remaining_depth <= 1:
             pruned = [ElipsisAnnotationNode()]
         else:
-            pruned = (
-                e.accept_visitor(self, current_remaining_depth - 1) for e in elements
-            )
+            pruned = (e.accept_visitor(self, current_remaining_depth - 1) for e in elements)
 
         return TupleAnnotationNode(pruned)
 
     def visit_name_annotation(self, node, current_remaining_depth: int):
         return node
 
-    def visit_list_annotation(
-        self, node: ListAnnotationNode, current_remaining_depth: int
-    ):
+    def visit_list_annotation(self, node: ListAnnotationNode, current_remaining_depth: int):
         if len(node.elements) > self.__max_list_size:
-            pruned = node.elements[: self.__max_list_size - 1] + (
-                ElipsisAnnotationNode(),
-            )
+            pruned = node.elements[: self.__max_list_size - 1] + (ElipsisAnnotationNode(),)
 
         if len(node.elements) == 0:
             pruned = node.elements
@@ -78,10 +67,7 @@ class PruneAnnotationVisitor(TypeAnnotationVisitor):
         elif current_remaining_depth <= 1:
             pruned = [ElipsisAnnotationNode()]
         else:
-            pruned = (
-                e.accept_visitor(self, current_remaining_depth - 1)
-                for e in node.elements
-            )
+            pruned = (e.accept_visitor(self, current_remaining_depth - 1) for e in node.elements)
 
         return ListAnnotationNode(pruned)
 
@@ -90,15 +76,11 @@ class PruneAnnotationVisitor(TypeAnnotationVisitor):
     ):
         return node
 
-    def visit_index_annotation(
-        self, node: IndexAnnotationNode, current_remaining_depth: int
-    ):
+    def visit_index_annotation(self, node: IndexAnnotationNode, current_remaining_depth: int):
         if current_remaining_depth == 0:
             return self.__replacement_node
 
-        return IndexAnnotationNode(
-            node.value.accept_visitor(self, current_remaining_depth)
-        )
+        return IndexAnnotationNode(node.value.accept_visitor(self, current_remaining_depth))
 
     def visit_elipsis_annotation(self, node, current_remaining_depth: int):
         return node

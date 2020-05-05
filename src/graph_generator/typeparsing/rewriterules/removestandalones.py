@@ -17,9 +17,7 @@ class RemoveStandAlones(RewriteRule):
     GENERIC_NODE = parse_type_annotation_node("typing.Generic")
     ANY_NODE = parse_type_annotation_node("typing.Any")
 
-    def matches(
-        self, node: TypeAnnotationNode, parent: Optional[TypeAnnotationNode]
-    ) -> bool:
+    def matches(self, node: TypeAnnotationNode, parent: Optional[TypeAnnotationNode]) -> bool:
         if (
             not node == self.UNION_NODE
             and not node == self.OPTIONAL_NODE

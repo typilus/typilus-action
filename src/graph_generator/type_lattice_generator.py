@@ -24,9 +24,7 @@ class TypeLatticeGenerator:
 
     ANY_TYPE = parse_type_annotation_node("typing.Any")
 
-    def __init__(
-        self, typing_rules_path: str, max_depth_size: int = 2, max_list_size: int = 2
-    ):
+    def __init__(self, typing_rules_path: str, max_depth_size: int = 2, max_list_size: int = 2):
         self.__to_process = []
         self.__processed = set()
         self.new_type_rules = defaultdict(set)  # [new type, ref]
@@ -48,9 +46,7 @@ class TypeLatticeGenerator:
         self.__project_specific_aliases = {}
 
         self.__max_annotation_depth = max_depth_size
-        self.__max_depth_pruning_visitor = PruneAnnotationVisitor(
-            self.ANY_TYPE, max_list_size
-        )
+        self.__max_depth_pruning_visitor = PruneAnnotationVisitor(self.ANY_TYPE, max_list_size)
 
         # [specialized type, general type]
         self.is_a_edges = defaultdict(set)  # type: Dict[int, Set[int]]
@@ -82,9 +78,7 @@ class TypeLatticeGenerator:
                 RemoveGenericWithAnys(),
             ]
         )
-        assert len(self.__ids_to_nodes) == len(
-            set(repr(r) for r in self.__ids_to_nodes)
-        )
+        assert len(self.__ids_to_nodes) == len(set(repr(r) for r in self.__ids_to_nodes))
 
     def create_alias_replacement(
         self, imported_symbols: Dict[TypeAnnotationNode, TypeAnnotationNode]
@@ -110,23 +104,15 @@ class TypeLatticeGenerator:
             next_node = to_visit.pop()
             generic_transitive_closure.add(next_node)
             to_visit.extend(
-                (
-                    t
-                    for t in child_edges[next_node]
-                    if t not in generic_transitive_closure
-                )
+                (t for t in child_edges[next_node] if t not in generic_transitive_closure)
             )
 
         non_generic_types = set(self.__all_types.values()) - generic_transitive_closure
 
         # Add special objects
-        non_generic_types.add(
-            self.__annotation_to_id(parse_type_annotation_node("abc.ABC"))
-        )
+        non_generic_types.add(self.__annotation_to_id(parse_type_annotation_node("abc.ABC")))
 
-        self.__non_generic_types = frozenset(
-            (self.__ids_to_nodes[i] for i in non_generic_types)
-        )
+        self.__non_generic_types = frozenset((self.__ids_to_nodes[i] for i in non_generic_types))
 
     def __annotation_to_id(self, annotation: TypeAnnotationNode) -> int:
         annotation_idx = self.__all_types.get(annotation)
@@ -176,22 +162,16 @@ class TypeLatticeGenerator:
 
         self.is_a_edges[from_node_idx].add(to_node_idx)
 
-    def __is_a_relationships(
-        self, from_type: TypeAnnotationNode
-    ) -> FrozenSet[TypeAnnotationNode]:
+    def __is_a_relationships(self, from_type: TypeAnnotationNode) -> FrozenSet[TypeAnnotationNode]:
         from_node_idx = self.__annotation_to_id(from_type)
-        return frozenset(
-            (self.__ids_to_nodes[t] for t in self.is_a_edges[from_node_idx])
-        )
+        return frozenset((self.__ids_to_nodes[t] for t in self.is_a_edges[from_node_idx]))
 
     def add_type(
         self,
         annotation: TypeAnnotationNode,
         imported_symbols: Dict[TypeAnnotationNode, TypeAnnotationNode],
     ):
-        annotation = annotation.accept_visitor(
-            self.create_alias_replacement(imported_symbols)
-        )
+        annotation = annotation.accept_visitor(self.create_alias_replacement(imported_symbols))
         if annotation in self.__all_types:
             return
         pruned = annotation.accept_visitor(
@@ -210,15 +190,12 @@ class TypeLatticeGenerator:
         return type_annotation.accept_visitor(self.__type_erasure)
 
     @lru_cache(16384)
-    def __rewrite_verbose(
-        self, type_annotation: TypeAnnotationNode
-    ) -> TypeAnnotationNode:
+    def __rewrite_verbose(self, type_annotation: TypeAnnotationNode) -> TypeAnnotationNode:
         return type_annotation.accept_visitor(self.__rewrites_verbose_annotations, None)
 
     def build_graph(self):
         print(
-            "Building type graph for project... (%s elements to process)"
-            % len(self.__to_process)
+            "Building type graph for project... (%s elements to process)" % len(self.__to_process)
         )
         i = 0
 
@@ -261,8 +238,7 @@ class TypeLatticeGenerator:
                 ):
                     for type_annotation in all_inherited_types_and_self:
                         type_annotation = type_annotation.accept_visitor(
-                            self.__max_depth_pruning_visitor,
-                            self.__max_annotation_depth,
+                            self.__max_depth_pruning_visitor, self.__max_annotation_depth,
                         )
                         type_annotation = self.__rewrite_verbose(type_annotation)
                         type_has_been_seen = type_annotation in self.__all_types
@@ -308,12 +284,8 @@ class TypeLatticeGenerator:
             for to_type_idx in to_type_idxs:
                 edges.append((from_type_idx, to_type_idx))
 
-        assert len(self.__ids_to_nodes) == len(
-            set(repr(r) for r in self.__ids_to_nodes)
-        )
+        assert len(self.__ids_to_nodes) == len(set(repr(r) for r in self.__ids_to_nodes))
         return {
-            "nodes": list(
-                (repr(type_annotation) for type_annotation in self.__ids_to_nodes)
-            ),
+            "nodes": list((repr(type_annotation) for type_annotation in self.__ids_to_nodes)),
             "edges": edges,
         }

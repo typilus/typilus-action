@@ -16,9 +16,7 @@ class RemoveRecursiveGenerics(RewriteRule):
 
     GENERIC_NODE = parse_type_annotation_node("typing.Generic")
 
-    def matches(
-        self, node: TypeAnnotationNode, parent: Optional[TypeAnnotationNode]
-    ) -> bool:
+    def matches(self, node: TypeAnnotationNode, parent: Optional[TypeAnnotationNode]) -> bool:
         if not isinstance(node, SubscriptAnnotationNode):
             return False
         if node.value != self.GENERIC_NODE:
@@ -32,10 +30,7 @@ class RemoveRecursiveGenerics(RewriteRule):
         if isinstance(slice, TupleAnnotationNode):
             return any(
                 s == self.GENERIC_NODE
-                or (
-                    isinstance(s, SubscriptAnnotationNode)
-                    and s.value == self.GENERIC_NODE
-                )
+                or (isinstance(s, SubscriptAnnotationNode) and s.value == self.GENERIC_NODE)
                 for s in slice.elements
             )
 
@@ -51,9 +46,7 @@ class RemoveRecursiveGenerics(RewriteRule):
         for s in slice.elements:
             if s == self.GENERIC_NODE:
                 pass  # has no arguments
-            elif (
-                isinstance(s, SubscriptAnnotationNode) and s.value == self.GENERIC_NODE
-            ):
+            elif isinstance(s, SubscriptAnnotationNode) and s.value == self.GENERIC_NODE:
                 if isinstance(s.slice.value, TupleAnnotationNode):
                     next_slice |= set(s.slice.value.elements)
                 else:

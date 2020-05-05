@@ -17,9 +17,7 @@ class RemoveGenericWithAnys(RewriteRule):
 
     ANY_NODE = parse_type_annotation_node("typing.Any")
 
-    def matches(
-        self, node: TypeAnnotationNode, parent: Optional[TypeAnnotationNode]
-    ) -> bool:
+    def matches(self, node: TypeAnnotationNode, parent: Optional[TypeAnnotationNode]) -> bool:
         if not isinstance(node, SubscriptAnnotationNode):
             return False
 
@@ -30,8 +28,7 @@ class RemoveGenericWithAnys(RewriteRule):
             return True
         if isinstance(slice, TupleAnnotationNode):
             return all(
-                s == self.ANY_NODE or isinstance(s, ElipsisAnnotationNode)
-                for s in slice.elements
+                s == self.ANY_NODE or isinstance(s, ElipsisAnnotationNode) for s in slice.elements
             )
 
         return False

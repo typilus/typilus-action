@@ -32,46 +32,32 @@ class RewriteRuleVisitor(TypeAnnotationVisitor):
     ) -> SubscriptAnnotationNode:
         node = SubscriptAnnotationNode(
             value=node.value.accept_visitor(self, node),
-            slice=node.slice.accept_visitor(self, node)
-            if node.slice is not None
-            else None,
+            slice=node.slice.accept_visitor(self, node) if node.slice is not None else None,
         )
         return self.__apply_on_match(node, parent)
 
     def visit_tuple_annotation(
         self, node: TupleAnnotationNode, parent: TypeAnnotationNode
     ) -> TupleAnnotationNode:
-        node = TupleAnnotationNode(
-            (e.accept_visitor(self, node) for e in node.elements)
-        )
+        node = TupleAnnotationNode((e.accept_visitor(self, node) for e in node.elements))
         return self.__apply_on_match(node, parent)
 
     def visit_name_annotation(self, node, parent: TypeAnnotationNode):
         return self.__apply_on_match(node, parent)
 
-    def visit_list_annotation(
-        self, node: ListAnnotationNode, parent: TypeAnnotationNode
-    ):
+    def visit_list_annotation(self, node: ListAnnotationNode, parent: TypeAnnotationNode):
         node = ListAnnotationNode((e.accept_visitor(self, node) for e in node.elements))
         return self.__apply_on_match(node, parent)
 
-    def visit_attribute_annotation(
-        self, node: AttributeAnnotationNode, parent: TypeAnnotationNode
-    ):
-        node = AttributeAnnotationNode(
-            node.value.accept_visitor(self, node), node.attribute
-        )
+    def visit_attribute_annotation(self, node: AttributeAnnotationNode, parent: TypeAnnotationNode):
+        node = AttributeAnnotationNode(node.value.accept_visitor(self, node), node.attribute)
         return self.__apply_on_match(node, parent)
 
-    def visit_index_annotation(
-        self, node: IndexAnnotationNode, parent: TypeAnnotationNode
-    ):
+    def visit_index_annotation(self, node: IndexAnnotationNode, parent: TypeAnnotationNode):
         node = IndexAnnotationNode(node.value.accept_visitor(self, node))
         return self.__apply_on_match(node, parent)
 
-    def visit_elipsis_annotation(
-        self, node: ElipsisAnnotationNode, parent: TypeAnnotationNode
-    ):
+    def visit_elipsis_annotation(self, node: ElipsisAnnotationNode, parent: TypeAnnotationNode):
         return self.__apply_on_match(node, parent)
 
     def visit_name_constant_annotation(self, node, parent: TypeAnnotationNode):
