@@ -11,6 +11,7 @@ import requests
 from dpu_utils.utils import load_jsonl_gz
 
 from changeutils import get_changed_files
+from annotationutils import annotate_parameter
 from graph_generator.extract_graphs import extract_graphs, Monitoring
 
 
@@ -99,7 +100,8 @@ with TemporaryDirectory() as out_dir:
             "line": suggestion.file_location[0],
             "side": "RIGHT",
             "commit_id": commit_id,
-            "body": f"What about annotating `{suggestion.name}` with the type `{suggestion.suggestion}`?",
+            "body": "The following type annotation might be useful:\n ```suggestion\n"
+            f"{annotate_parameter(suggestion.filepath[1:],suggestion.file_location,suggestion.name,suggestion.suggestion)}\n```\n",
         }
         headers = {
             "authorization": f"Bearer {github_token}",
