@@ -101,7 +101,7 @@ with TemporaryDirectory() as out_dir:
             "side": "RIGHT",
             "commit_id": commit_id,
             "body": "The following type annotation might be useful:\n ```suggestion\n"
-            f"{annotate_parameter(suggestion.filepath[1:],suggestion.file_location,suggestion.name,suggestion.suggestion)}\n```\n",
+            f"{annotate_parameter(suggestion.filepath[1:],suggestion.file_location,suggestion.name,suggestion.suggestion)}```\n",
         }
         headers = {
             "authorization": f"Bearer {github_token}",

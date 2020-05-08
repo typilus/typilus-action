@@ -13,7 +13,8 @@ def annotate_parameter(
     target_line = lines[location[0] - 1]
     assert target_line[location[1] :].startswith(param_name)
     return (
-        target_line[: location[1] + len(param_name)]
+        " "
+        + target_line[: location[1] + len(param_name)]  # It's unclear why a single char is lost...
         + f": {annotation}"
         + target_line[location[1] + len(param_name) :]
     )
