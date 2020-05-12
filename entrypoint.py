@@ -11,7 +11,7 @@ import requests
 from dpu_utils.utils import load_jsonl_gz
 
 from changeutils import get_changed_files
-from annotationutils import annotate_parameter
+from annotationutils import annotate_line, find_annotation_line, group_suggestions
 from graph_generator.extract_graphs import extract_graphs, Monitoring
 
 
@@ -94,14 +94,31 @@ with TemporaryDirectory() as out_dir:
 
     comment_url = event_data["pull_request"]["review_comments_url"]
     commit_id = event_data["pull_request"]["head"]["sha"]
+
     for suggestion in type_suggestions:
+        if suggestion.type == "class-or-function":
+            suggestion.annotation_lineno = find_annotation_line(
+                suggestion.filepath, suggestion.file_location, suggestion.name
+            )
+        else:
+            suggestion.annotation_lineno = suggestion.file_location[0]
+
+    # Group type suggestions by (filepath + lineno)
+    grouped_suggestions = group_suggestions(type_suggestions)
+
+    for same_line_suggestions in grouped_suggestions:
+        suggestion = same_line_suggestions[0]
+        path = suggestion.filepath[1:] # No slash in the beginning
+        annotation_lineno = suggestion.annotation_lineno
+        with open(path) as file:
+            annotation_line = file.readlines()[annotation_lineno - 1]
         data = {
-            "path": suggestion.filepath[1:],  # No slash in the beginning
-            "line": suggestion.file_location[0],
+            "path": path,  
+            "line": annotation_lineno,
             "side": "RIGHT",
             "commit_id": commit_id,
             "body": "The following type annotation might be useful:\n ```suggestion\n"
-            f"{annotate_parameter(suggestion.filepath[1:],suggestion.file_location,suggestion.name,suggestion.suggestion)}```\n",
+            f"{annotate_line(annotation_line, same_line_suggestions)}```\n",
         }
         headers = {
             "authorization": f"Bearer {github_token}",
