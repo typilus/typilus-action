@@ -72,7 +72,6 @@ with TemporaryDirectory() as out_dir:
             print(f"Looking into {datafile_path}...")
             for graph in load_jsonl_gz(datafile_path):
                 filepath = graph["filename"]
-                print(f"Reading graph for {filepath}.")
                 yield graph
 
     model, nn = Graph2Class.restore_model("/usr/src/model.pkl.gz", "cpu")
@@ -83,11 +82,12 @@ with TemporaryDirectory() as out_dir:
     for graph, predictions in model.predict(data_iter(), nn, "cpu"):
         # predictions is Dict[int, Tuple[str, float]]
         filepath = graph["filename"]
+        print(f"Suggestions for graph {filepath}: {predictions}")
         for supernode_idx, node_data in graph["supernodes"].items():
             if node_data["type"] == "variable":
                 continue  # Do not suggest annotations on variables for now.
             lineno, colno = node_data["location"]
-            predicted_type, predicted_prob = predictions[int(supernode_idx)]
+            predicted_type, predicted_prob = predictions[supernode_idx]
             suggestion = TypeSuggestion(
                 filepath, node_data["name"], (lineno, colno), predicted_type, predicted_prob,
             )
