@@ -75,7 +75,7 @@ with TemporaryDirectory() as out_dir:
                 print(f"Reading graph for {filepath}.")
                 yield graph
 
-    model, nn = Graph2Class.restore_model("model.pkl.gz", "cpu")
+    model, nn = Graph2Class.restore_model("/usr/src/model.pkl.gz", "cpu")
 
     # TODO: Get suggestions from Typilus!
     # TODO: Dummy code below
