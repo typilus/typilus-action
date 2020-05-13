@@ -9,6 +9,7 @@ from typing import Tuple, NamedTuple, List
 
 import requests
 from dpu_utils.utils import load_jsonl_gz
+from ptgnn.implementations.typilus.graph2class import Graph2Class
 
 from changeutils import get_changed_files
 from annotationutils import annotate_parameter
@@ -66,25 +67,33 @@ with TemporaryDirectory() as out_dir:
         repo_path, typing_rules_path, files_to_extract=set(changed_files), target_folder=out_dir,
     )
 
+    def data_iter():
+        for datafile_path in iglob(os.path.join(out_dir, "*.jsonl.gz")):
+            print(f"Looking into {datafile_path}...")
+            for graph in load_jsonl_gz(datafile_path):
+                filepath = graph["filename"]
+                print(f"Reading graph for {filepath}.")
+                yield graph
+
+    model, nn = Graph2Class.restore_model("model.pkl.gz", "cpu")
+
     # TODO: Get suggestions from Typilus!
     # TODO: Dummy code below
     type_suggestions: List[TypeSuggestion] = []
-    for datafile_path in iglob(os.path.join(out_dir, "*.jsonl.gz")):
-        print(f"Looking into {datafile_path}...")
-        for graph in load_jsonl_gz(datafile_path):
-            filepath = graph["filename"]
-            print(f"Reading graph for {filepath}.")
-
-            for _, node_data in graph["supernodes"].items():
-                if node_data["type"] != "parameter":
-                    continue  # Do not suggest annotations on non-params for now.
-                lineno, colno = node_data["location"]
-                if lineno in changed_files[filepath] and node_data["annotation"] is None:
-                    type_suggestions.append(
-                        TypeSuggestion(
-                            filepath, node_data["name"], (lineno, colno), "DummyTypeTODO", 1,
-                        )
-                    )
+    for graph, predictions in model.predict(data_iter(), nn, "cpu"):
+        # predictions is Dict[int, Tuple[str, float]]
+        filepath = graph["filename"]
+        for supernode_idx, node_data in graph["supernodes"].items():
+            if node_data["type"] == "variable":
+                continue  # Do not suggest annotations on variables for now.
+            lineno, colno = node_data["location"]
+            predicted_type, predicted_prob = predictions[int(supernode_idx)]
+            suggestion = TypeSuggestion(
+                filepath, node_data["name"], (lineno, colno), predicted_type, predicted_prob,
+            )
+            print(suggestion)  # Debug
+            if lineno in changed_files[filepath] and node_data["annotation"] is None:
+                type_suggestions.append(suggestion)
 
     # Add PR comments
     if debug:
@@ -101,7 +110,8 @@ with TemporaryDirectory() as out_dir:
             "side": "RIGHT",
             "commit_id": commit_id,
             "body": "The following type annotation might be useful:\n ```suggestion\n"
-            f"{annotate_parameter(suggestion.filepath[1:],suggestion.file_location,suggestion.name,suggestion.suggestion)}```\n",
+            f"{annotate_parameter(suggestion.filepath[1:],suggestion.file_location,suggestion.name,suggestion.suggestion)}```\n"
+            f"(prediction probability {suggestion.confidence:.1%})",
         }
         headers = {
             "authorization": f"Bearer {github_token}",
