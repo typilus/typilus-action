@@ -1,6 +1,6 @@
 # action.yml
-name: 'Typilus Suggest'
-description: 'Suggest Python Type Annotations'
+name: 'Typilus: Suggest Python Type Annotations'
+description: 'Suggest Likely Python Type Annotations'
 branding:
     icon: box
     color: gray-dark
@@ -11,7 +11,7 @@ inputs:
     default: '.'
 outputs:
   output:
-    description: 'A list of suggestions.'
+    description: 'Makes suggeted edits to the pull requests for adding Python Type annotations.'
 runs:
   using: 'docker'
   image: 'Dockerfile'
