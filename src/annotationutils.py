@@ -38,7 +38,7 @@ def annotate_parameters(line, suggestions):
     for s in suggestions:
         assert line[s.file_location[1] :].startswith(s.name)
         annotated_line = insert_at(
-            annotated_line, f": {s.suggestion}", s.file_location[1] + 1 + length_increase
+            " " + annotated_line, f": {s.suggestion}", s.file_location[1] + len(s.name) + length_increase
         )
         length_increase += len(s.suggestion) + 2
     return annotated_line
