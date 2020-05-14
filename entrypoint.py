@@ -76,8 +76,6 @@ with TemporaryDirectory() as out_dir:
 
     model, nn = Graph2Class.restore_model("/usr/src/model.pkl.gz", "cpu")
 
-    # TODO: Get suggestions from Typilus!
-    # TODO: Dummy code below
     type_suggestions: List[TypeSuggestion] = []
     for graph, predictions in model.predict(data_iter(), nn, "cpu"):
         # predictions is Dict[int, Tuple[str, float]]
@@ -103,7 +101,7 @@ with TemporaryDirectory() as out_dir:
         for suggestion in type_suggestions:
             print(suggestion)
 
-    confidence_threshold = int(os.getenv("CONFIDENCE_THRESHOLD", 0))
+    confidence_threshold = float(os.getenv("CONFIDENCE_THRESHOLD", 0.0))
     print(f"Confidence Threshold: {confidence_threshold:.2%}")
 
     comment_url = event_data["pull_request"]["review_comments_url"]
