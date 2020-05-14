@@ -13,7 +13,7 @@ jobs:
     - name: Build Image
       run: docker build . --tag typilusenv --file Dockerfile
     - name: Log into registry
-      run: echo {{ secrets.GITHUB_TOKEN }} | docker login docker.pkg.github.com -u mallamanis --password-stdin
+      run: echo ${{ secrets.GITHUB_TOKEN }} | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
     - name: Push image
       run: |
         docker tag typilusenv docker.pkg.github.com/typilus/typilus-action/actionenv:${GITHUB_REF:10}
