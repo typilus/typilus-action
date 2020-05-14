@@ -86,7 +86,8 @@ with TemporaryDirectory() as out_dir:
                 filepath = graph["filename"]
                 yield graph
 
-    model, nn = Graph2Class.restore_model("/usr/src/model.pkl.gz", "cpu")
+    model_path = os.getenv("MODEL_PATH", "/usr/src/model.pkl.gz")
+    model, nn = Graph2Class.restore_model(model_path, "cpu")
 
     type_suggestions: List[TypeSuggestion] = []
     for graph, predictions in model.predict(data_iter(), nn, "cpu"):
