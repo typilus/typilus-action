@@ -136,6 +136,9 @@ with TemporaryDirectory() as out_dir:
     # Group type suggestions by (filepath + lineno)
     grouped_suggestions = group_suggestions(type_suggestions)
 
+    def report_confidence(suggestions):
+        return ", ".join(f"{s.confidence:.1%}" for s in suggestions)
+
     for same_line_suggestions in grouped_suggestions:
         suggestion = same_line_suggestions[0]
         path = suggestion.filepath[1:]  # No slash in the beginning
@@ -147,9 +150,9 @@ with TemporaryDirectory() as out_dir:
             "line": annotation_lineno,
             "side": "RIGHT",
             "commit_id": commit_id,
-            "body": "The following type annotation might be useful:\n ```suggestion\n"
+            "body": "The following type annotation(s) might be useful:\n ```suggestion\n"
             f"{annotate_line(target_line, same_line_suggestions)}```\n"
-            f"(prediction probability {suggestion.confidence:.1%})",
+            f"Prediction probability: {report_confidence(same_line_suggestions)}",
         }
         headers = {
             "authorization": f"Bearer {github_token}",
