@@ -1,4 +1,4 @@
-## Typilus: Suggest Python Type Annotations
+# Typilus: Suggest Python Type Annotations
 
 A GitHub action that suggests type annotations for Python using machine learning.
 
@@ -25,8 +25,8 @@ suggestions with a partial context, at the cost of suggesting some false
 positives.
 
 
+### Install Action in your Repository
 
-#### Install Action in your Repository
 To use the GitHub action create a workflow file. For example,
 ```
 name: Typilus Type Annotation Suggestions
@@ -68,13 +68,13 @@ a corpus of open-source repositories that use Python's type annotations.
 At this point we do _not_ support online adaptation of the model to each project.
 
 
-###### Training your own model
+##### Training your own model
 You may wish to train your own model and use it in this action. To
 do so, please follow the steps in [`ptgnn`](https://github.com/microsoft/ptgnn/).
 Then provide a path to the model in your GitHub action configuration, through the
 `MODEL_PATH` environment variable.
 
 
-### Contributing
+## Contributing
 We welcome external contributions and ideas. Please look at the issues in the repository
 for ideas and improvements.
