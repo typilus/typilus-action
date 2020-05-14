@@ -83,6 +83,7 @@ with TemporaryDirectory() as out_dir:
         # predictions is Dict[int, Tuple[str, float]]
         filepath = graph["filename"]
         print(f"Suggestions for graph {filepath}: {predictions}")
+        print(f"Supernodes: {graph['supernodes']}")
         for supernode_idx, node_data in graph["supernodes"].items():
             if node_data["type"] == "variable":
                 continue  # Do not suggest annotations on variables for now.
