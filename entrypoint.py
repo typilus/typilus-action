@@ -46,7 +46,7 @@ assert (
     os.environ["GITHUB_EVENT_NAME"] == "pull_request"
 ), "This action runs only on pull request events."
 github_token = os.environ["GITHUB_TOKEN"]
-debug = False
+debug = True
 
 with open(os.environ["GITHUB_EVENT_PATH"]) as f:
     event_data = json.load(f)
@@ -106,6 +106,10 @@ with TemporaryDirectory() as out_dir:
     for graph, predictions in model.predict(data_iter(), nn, "cpu"):
         # predictions has the type: Dict[int, Tuple[str, float]]
         filepath = graph["filename"]
+
+        if debug:
+            print("Predictions:", predictions)
+            print("SuperNodes:", graph["supernodes"])
 
         for supernode_idx, (predicted_type, predicted_prob) in predictions.items():
             supernode_data = graph["supernodes"][str(supernode_idx)]
