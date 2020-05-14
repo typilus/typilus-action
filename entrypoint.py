@@ -9,6 +9,7 @@ from typing import Tuple, NamedTuple, List
 
 import requests
 from dpu_utils.utils import load_jsonl_gz
+from ptgnn.implementations.typilus.graph2class import Graph2Class
 
 from changeutils import get_changed_files
 from annotationutils import annotate_line, find_annotation_line, group_suggestions
@@ -66,31 +67,42 @@ with TemporaryDirectory() as out_dir:
         repo_path, typing_rules_path, files_to_extract=set(changed_files), target_folder=out_dir,
     )
 
-    # TODO: Get suggestions from Typilus!
-    # TODO: Dummy code below
-    type_suggestions: List[TypeSuggestion] = []
-    for datafile_path in iglob(os.path.join(out_dir, "*.jsonl.gz")):
-        print(f"Looking into {datafile_path}...")
-        for graph in load_jsonl_gz(datafile_path):
-            filepath = graph["filename"]
-            print(f"Reading graph for {filepath}.")
+    def data_iter():
+        for datafile_path in iglob(os.path.join(out_dir, "*.jsonl.gz")):
+            print(f"Looking into {datafile_path}...")
+            for graph in load_jsonl_gz(datafile_path):
+                filepath = graph["filename"]
+                yield graph
 
-            for _, node_data in graph["supernodes"].items():
-                if node_data["type"] != "parameter":
-                    continue  # Do not suggest annotations on non-params for now.
-                lineno, colno = node_data["location"]
-                if lineno in changed_files[filepath] and node_data["annotation"] is None:
-                    type_suggestions.append(
-                        TypeSuggestion(
-                            filepath, node_data["name"], (lineno, colno), "DummyTypeTODO", 1,
-                        )
-                    )
+    model, nn = Graph2Class.restore_model("/usr/src/model.pkl.gz", "cpu")
+
+    type_suggestions: List[TypeSuggestion] = []
+    for graph, predictions in model.predict(data_iter(), nn, "cpu"):
+        # predictions is Dict[int, Tuple[str, float]]
+        filepath = graph["filename"]
+        print(f"Suggestions for graph {filepath}: {predictions}")
+        print(f"Supernodes: {graph['supernodes']}")
+        for supernode_idx, (predicted_type, predicted_prob) in predictions.items():
+            supernode_data = graph["supernodes"][str(supernode_idx)]
+            if supernode_data["type"] == "variable":
+                continue  # Do not suggest annotations on variables for now.
+            lineno, colno = supernode_data["location"]
+            suggestion = TypeSuggestion(
+                filepath, supernode_data["name"], (lineno, colno), predicted_type, predicted_prob,
+            )
+            # TODO: Add confidence filtering!
+            # TODO: Add very confident disagreements
+            if lineno in changed_files[filepath] and supernode_data["annotation"] == "??":
+                type_suggestions.append(suggestion)
 
     # Add PR comments
     if debug:
         print("# Suggestions:", len(type_suggestions))
         for suggestion in type_suggestions:
             print(suggestion)
+
+    confidence_threshold = float(os.getenv("CONFIDENCE_THRESHOLD", 0.0))
+    print(f"Confidence Threshold: {confidence_threshold:.2%}")
 
     comment_url = event_data["pull_request"]["review_comments_url"]
     commit_id = event_data["pull_request"]["head"]["sha"]
@@ -108,17 +120,18 @@ with TemporaryDirectory() as out_dir:
 
     for same_line_suggestions in grouped_suggestions:
         suggestion = same_line_suggestions[0]
-        path = suggestion.filepath[1:] # No slash in the beginning
+        path = suggestion.filepath[1:]  # No slash in the beginning
         annotation_lineno = suggestion.annotation_lineno
         with open(path) as file:
             annotation_line = file.readlines()[annotation_lineno - 1]
         data = {
-            "path": path,  
+            "path": path,
             "line": annotation_lineno,
             "side": "RIGHT",
             "commit_id": commit_id,
             "body": "The following type annotation might be useful:\n ```suggestion\n"
-            f"{annotate_line(annotation_line, same_line_suggestions)}```\n",
+            f"{annotate_line(annotation_line, same_line_suggestions)}```\n"
+            f"(prediction probability {suggestion.confidence:.1%})",
         }
         headers = {
             "authorization": f"Bearer {github_token}",
