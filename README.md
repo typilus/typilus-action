@@ -14,7 +14,7 @@ Introduced in Python 3.5, [type hints](https://www.python.org/dev/peps/pep-0484/
 to annotate their code with the expected types. These annotations are
 optionally checked by external tools, such as [mypy](http://www.mypy-lang.org/) and [pyright](https://github.com/Microsoft/pyright),
 to prevent type errors; they also facilitate code comprehension and navigation.
-The [`typing`](https://docs.python.org/3/library/typing.html) package
+The [`typing`](https://docs.python.org/3/library/typing.html) module
 provides the core types.
 
 ***Why use machine learning?***
