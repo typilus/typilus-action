@@ -2,32 +2,33 @@
 
 A GitHub action that suggests type annotations for Python using machine learning.
 
-This actions makes suggestions within each pull request as
+This action makes suggestions within each pull request as
 [suggested edits](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/incorporating-feedback-in-your-pull-request#applying-a-suggested-change).
 You can then directly apply these suggestions to your code or ignore them.
 
 > TODO: Add a screenshot of an edit suggestion.
 
 ***What are Python type annotations?***
-Python type annotations have been introduced in Python 3.x and allow users
+Introduced in Python 3.5, [type hints](https://www.python.org/dev/peps/pep-0484/)
+(more traditionally, type annotations) allow users
 to annotate their code with the expected types. These annotations are
-optionally checked by external tools, such as [mypy](http://www.mypy-lang.org/) and [pyright](https://github.com/Microsoft/pyright)
-but also help developers understand the code more confidently.
-The [`typing`](https://docs.python.org/3/library/typing.html) package
+optionally checked by external tools, such as [mypy](http://www.mypy-lang.org/) and [pyright](https://github.com/Microsoft/pyright),
+to prevent type errors; they also facilitate code comprehension and navigation.
+The [`typing`](https://docs.python.org/3/library/typing.html) module
 provides the core types.
 
 ***Why use machine learning?***
 Given the dynamic nature of Python, type inference is challenging,
-especially over partial contexts. To tackle this we use a graph neural
+especially over partial contexts. To tackle this challenge, we use a graph neural
 network model that predicts types by probabilistically reasoning over
-a program’s structure, names, and patterns. This allows to make
-suggestions with a partial context, at the cost of suggesting some false
+a program’s structure, names, and patterns. This allows us to make
+suggestions with only a partial context, at the cost of suggesting some false
 positives.
 
 
 ### Install Action in your Repository
 
-To use the GitHub action create a workflow file. For example,
+To use the GitHub action, create a workflow file. For example,
 ```yaml
 name: Typilus Type Annotation Suggestions
 
