@@ -84,16 +84,17 @@ with TemporaryDirectory() as out_dir:
         filepath = graph["filename"]
         print(f"Suggestions for graph {filepath}: {predictions}")
         print(f"Supernodes: {graph['supernodes']}")
-        for supernode_idx, node_data in graph["supernodes"].items():
-            if node_data["type"] == "variable":
+        for supernode_idx, (predicted_type, predicted_prob) in predictions.items():
+            supernode_data = graph["supernodes"][str(supernode_idx)]
+            if supernode_data["type"] == "variable":
                 continue  # Do not suggest annotations on variables for now.
-            lineno, colno = node_data["location"]
-            predicted_type, predicted_prob = predictions[supernode_idx]
+            lineno, colno = supernode_data["location"]
             suggestion = TypeSuggestion(
-                filepath, node_data["name"], (lineno, colno), predicted_type, predicted_prob,
+                filepath, supernode_data["name"], (lineno, colno), predicted_type, predicted_prob,
             )
-            print(suggestion)  # Debug
-            if lineno in changed_files[filepath] and node_data["annotation"] is None:
+            # TODO: Add confidence filtering!
+            # TODO: Add very confident disagreements
+            if lineno in changed_files[filepath] and supernode_data["annotation"] == "??":
                 type_suggestions.append(suggestion)
 
     # Add PR comments
@@ -101,6 +102,9 @@ with TemporaryDirectory() as out_dir:
         print("# Suggestions:", len(type_suggestions))
         for suggestion in type_suggestions:
             print(suggestion)
+
+    confidence_threshold = int(os.getenv("CONFIDENCE_THRESHOLD", 0))
+    print(f"Confidence Threshold: {confidence_threshold:.2%}")
 
     comment_url = event_data["pull_request"]["review_comments_url"]
     commit_id = event_data["pull_request"]["head"]["sha"]
