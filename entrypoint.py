@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import sys
 from tempfile import TemporaryDirectory
-from typing import Tuple, NamedTuple, List
+from typing import Tuple, List
 
 import requests
 from dpu_utils.utils import load_jsonl_gz
@@ -16,12 +16,24 @@ from annotationutils import annotate_line, find_annotation_line, group_suggestio
 from graph_generator.extract_graphs import extract_graphs, Monitoring
 
 
-class TypeSuggestion(NamedTuple):
-    filepath: str
-    name: str
-    file_location: Tuple[int, int]
-    suggestion: str
-    confidence: float
+class TypeSuggestion:
+    def __init__(
+        self,
+        filepath: str,
+        name: str,
+        file_location: Tuple[int, int],
+        suggestion: str,
+        symbol_kind: str,
+        confidence: float,
+        annotation_lineno: int = 0,
+    ):
+        self.filepath = filepath
+        self.name = name
+        self.file_location = file_location
+        self.suggestion = suggestion
+        self.symbol_kind = symbol_kind
+        self.confidence = confidence
+        self.annotation_lineno = annotation_lineno
 
 
 assert os.environ["GITHUB_EVENT_NAME"] == "pull_request"
@@ -78,7 +90,7 @@ with TemporaryDirectory() as out_dir:
 
     type_suggestions: List[TypeSuggestion] = []
     for graph, predictions in model.predict(data_iter(), nn, "cpu"):
-        # predictions is Dict[int, Tuple[str, float]]
+        # predictions has the type: Dict[int, Tuple[str, float]]
         filepath = graph["filename"]
         print(f"Suggestions for graph {filepath}: {predictions}")
         print(f"Supernodes: {graph['supernodes']}")
@@ -88,7 +100,12 @@ with TemporaryDirectory() as out_dir:
                 continue  # Do not suggest annotations on variables for now.
             lineno, colno = supernode_data["location"]
             suggestion = TypeSuggestion(
-                filepath, supernode_data["name"], (lineno, colno), predicted_type, predicted_prob,
+                filepath,
+                supernode_data["name"],
+                (lineno, colno),
+                predicted_type,
+                supernode_data["type"],
+                predicted_prob,
             )
             # TODO: Add confidence filtering!
             # TODO: Add very confident disagreements
@@ -108,11 +125,11 @@ with TemporaryDirectory() as out_dir:
     commit_id = event_data["pull_request"]["head"]["sha"]
 
     for suggestion in type_suggestions:
-        if suggestion.type == "class-or-function":
+        if suggestion.symbol_kind == "class-or-function":
             suggestion.annotation_lineno = find_annotation_line(
                 suggestion.filepath, suggestion.file_location, suggestion.name
             )
-        else:
+        else:  # when the underlying symbol is a parameter
             suggestion.annotation_lineno = suggestion.file_location[0]
 
     # Group type suggestions by (filepath + lineno)
@@ -123,14 +140,14 @@ with TemporaryDirectory() as out_dir:
         path = suggestion.filepath[1:]  # No slash in the beginning
         annotation_lineno = suggestion.annotation_lineno
         with open(path) as file:
-            annotation_line = file.readlines()[annotation_lineno - 1]
+            target_line = file.readlines()[annotation_lineno - 1]
         data = {
             "path": path,
             "line": annotation_lineno,
             "side": "RIGHT",
             "commit_id": commit_id,
             "body": "The following type annotation might be useful:\n ```suggestion\n"
-            f"{annotate_line(annotation_line, same_line_suggestions)}```\n"
+            f"{annotate_line(target_line, same_line_suggestions)}```\n"
             f"(prediction probability {suggestion.confidence:.1%})",
         }
         headers = {

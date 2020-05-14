@@ -6,7 +6,7 @@ from itertools import groupby
 
 def find_suggestion_for_return(suggestions):
     for s in suggestions:
-        if s.type == "class-or-function":
+        if s.symbol_kind == "class-or-function":
             return s
     else:
         return None
@@ -14,7 +14,7 @@ def find_suggestion_for_return(suggestions):
 
 def annotate_line(line, suggestions):
     para_suggestions = sorted(
-        (s for s in suggestions if s.type == "parameter"), key=lambda x: x.file_location[1]
+        (s for s in suggestions if s.symbol_kind == "parameter"), key=lambda x: x.file_location[1]
     )
     annotated_line = annotate_parameters(line, para_suggestions)
 
@@ -57,9 +57,8 @@ def find_annotation_line(filepath, location, func_name):
         lines = f.readlines()
     assert lines[location[0] - 1][location[1] :].startswith(func_name)
 
-    func_def_end = re.compile(
-        r"\)\s*:$"
-    )  # Assume that the function's return is *not* already annotated.
+    # Assume that the function's return is *not* already annotated.
+    func_def_end = re.compile(r"\)\s*:$")
 
     annotation_lineno = location[0]
     while annotation_lineno <= len(lines):
@@ -67,7 +66,7 @@ def find_annotation_line(filepath, location, func_name):
             break
         annotation_lineno += 1
     else:
-        raise Exception("Cannot find the closing brace of the parameter list.")
+        raise Exception("Cannot find the closing brace for the parameter list.")
 
     return annotation_lineno
 
