@@ -16,5 +16,5 @@ jobs:
       run: echo {{ secrets.GITHUB_TOKEN }} | docker login docker.pkg.github.com -u mallamanis --password-stdin
     - name: Push image
       run: |
-        docker tag typilusenv docker.pkg.github.com/typilus/typilus-action/actionenv:$GITHUB_REF
-        docker push docker.pkg.github.com/typilus/typilus-action/actionenv:$GITHUB_REF
+        docker tag typilusenv docker.pkg.github.com/typilus/typilus-action/actionenv:${GITHUB_REF:10}
+        docker push docker.pkg.github.com/typilus/typilus-action/actionenv:${GITHUB_REF:10}
