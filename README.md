@@ -9,7 +9,8 @@ You can then directly apply these suggestions to your code or ignore them.
 > TODO: Add a screenshot of an edit suggestion.
 
 ***What are Python type annotations?***
-Introduced in Python 3.5, type hints (more traditionally, type annotations) allow users
+Introduced in Python 3.5, [type hints](https://www.python.org/dev/peps/pep-0484/)
+(more traditionally, type annotations) allow users
 to annotate their code with the expected types. These annotations are
 optionally checked by external tools, such as [mypy](http://www.mypy-lang.org/) and [pyright](https://github.com/Microsoft/pyright),
 to prevent type errors; they also facilitate code comprehension and navigation.
