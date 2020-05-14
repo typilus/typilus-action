@@ -11,10 +11,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build Image
-      run: docker build . --tag typilusEnv --file Dockerfile
+      run: docker build . --tag typilusenv --file Dockerfile
     - name: Log into registry
       run: echo {{ secrets.GITHUB_TOKEN }} | docker login docker.pkg.github.com -u mallamanis --password-stdin
     - name: Push image
       run: |
-        docker tag typilusEnv docker.pkg.github.com/typilus/typilus-action/actionenv:$GITHUB_REF
+        docker tag typilusenv docker.pkg.github.com/typilus/typilus-action/actionenv:$GITHUB_REF
         docker push docker.pkg.github.com/typilus/typilus-action/actionenv:$GITHUB_REF
