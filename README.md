@@ -28,7 +28,7 @@ positives.
 ### Install Action in your Repository
 
 To use the GitHub action create a workflow file. For example,
-```
+```yaml
 name: Typilus Type Annotation Suggestions
 
 # Controls when the action will run. Triggers the workflow on push or pull request
