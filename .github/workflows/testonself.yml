@@ -20,4 +20,5 @@ jobs:
     - uses: ./
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        CONFIDENCE_THRESHOLD: 0.8
+        SUGGESTION_CONFIDENCE_THRESHOLD: 0.8
+        DISAGREEMENT_CONFIDENCE_THRESHOLD: 0.9

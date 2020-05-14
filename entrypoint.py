@@ -2,7 +2,6 @@
 import os
 from glob import iglob
 import json
-from pathlib import Path
 import sys
 from tempfile import TemporaryDirectory
 from typing import Tuple, List
@@ -12,7 +11,12 @@ from dpu_utils.utils import load_jsonl_gz
 from ptgnn.implementations.typilus.graph2class import Graph2Class
 
 from changeutils import get_changed_files
-from annotationutils import annotate_line, find_annotation_line, group_suggestions
+from annotationutils import (
+    annotate_line,
+    find_annotation_line,
+    group_suggestions,
+    annotation_rewrite,
+)
 from graph_generator.extract_graphs import extract_graphs, Monitoring
 
 
@@ -26,6 +30,7 @@ class TypeSuggestion:
         symbol_kind: str,
         confidence: float,
         annotation_lineno: int = 0,
+        is_disagreement: bool = False,
     ):
         self.filepath = filepath
         self.name = name
@@ -34,16 +39,20 @@ class TypeSuggestion:
         self.symbol_kind = symbol_kind
         self.confidence = confidence
         self.annotation_lineno = annotation_lineno
+        self.is_disagreement = is_disagreement
 
 
-assert os.environ["GITHUB_EVENT_NAME"] == "pull_request"
+assert (
+    os.environ["GITHUB_EVENT_NAME"] == "pull_request"
+), "This action runs only on pull request events."
 github_token = os.environ["GITHUB_TOKEN"]
 debug = False
 
 with open(os.environ["GITHUB_EVENT_PATH"]) as f:
-    print("Event data:")
     event_data = json.load(f)
-    print(json.dumps(event_data, indent=3))
+    if debug:
+        print("Event data:")
+        print(json.dumps(event_data, indent=4))
 
 repo_path = "."  # TODO: Is this always true?
 
@@ -60,18 +69,23 @@ diff_rq = requests.get(
     },
 )
 print("Diff GET Status Code: ", diff_rq.status_code)
-if debug:
-    print(diff_rq.text)
+
 
 changed_files = get_changed_files(diff_rq.text)
 if len(changed_files) == 0:
-    print("No changes found.")
+    print("No relevant changes found.")
     sys.exit(0)
 
-if debug:
-    print("Changed files: ", list(changed_files))
 
 monitoring = Monitoring()
+suggestion_confidence_threshold = float(os.getenv("SUGGESTION_CONFIDENCE_THRESHOLD", 0.0))
+diagreement_confidence_threshold = float(os.getenv("DISAGREEMENT_CONFIDENCE_THRESHOLD", 0.0))
+
+if debug:
+    print(
+        f"Confidence thresholds {suggestion_confidence_threshold:.2f} and {diagreement_confidence_threshold:.2f}."
+    )
+
 
 with TemporaryDirectory() as out_dir:
     typing_rules_path = os.path.join(os.path.dirname(__file__), "metadata", "typingRules.json")
@@ -83,7 +97,6 @@ with TemporaryDirectory() as out_dir:
         for datafile_path in iglob(os.path.join(out_dir, "*.jsonl.gz")):
             print(f"Looking into {datafile_path}...")
             for graph in load_jsonl_gz(datafile_path):
-                filepath = graph["filename"]
                 yield graph
 
     model_path = os.getenv("MODEL_PATH", "/usr/src/model.pkl.gz")
@@ -93,8 +106,7 @@ with TemporaryDirectory() as out_dir:
     for graph, predictions in model.predict(data_iter(), nn, "cpu"):
         # predictions has the type: Dict[int, Tuple[str, float]]
         filepath = graph["filename"]
-        print(f"Suggestions for graph {filepath}: {predictions}")
-        print(f"Supernodes: {graph['supernodes']}")
+
         for supernode_idx, (predicted_type, predicted_prob) in predictions.items():
             supernode_data = graph["supernodes"][str(supernode_idx)]
             if supernode_data["type"] == "variable":
@@ -104,13 +116,24 @@ with TemporaryDirectory() as out_dir:
                 filepath,
                 supernode_data["name"],
                 (lineno, colno),
-                predicted_type,
+                annotation_rewrite(predicted_type),
                 supernode_data["type"],
                 predicted_prob,
+                is_disagreement=supernode_data["annotation"] != "??"
+                and supernode_data["annotation"] != predicted_type,
             )
-            # TODO: Add confidence filtering!
-            # TODO: Add very confident disagreements
-            if lineno in changed_files[filepath] and supernode_data["annotation"] == "??":
+
+            if lineno not in changed_files[filepath]:
+                continue
+
+            # TODO: Use confidence filtering!
+            if (
+                supernode_data["annotation"] == "??"
+            ):  # and suggestion.confidence > suggestion_confidence_threshold:
+                type_suggestions.append(suggestion)
+            elif (
+                suggestion.is_disagreement
+            ):  # and suggestion.confidence > diagreement_confidence_threshold:
                 type_suggestions.append(suggestion)
 
     # Add PR comments
@@ -118,9 +141,6 @@ with TemporaryDirectory() as out_dir:
         print("# Suggestions:", len(type_suggestions))
         for suggestion in type_suggestions:
             print(suggestion)
-
-    confidence_threshold = float(os.getenv("CONFIDENCE_THRESHOLD", 0.0))
-    print(f"Confidence Threshold: {confidence_threshold:.2%}")
 
     comment_url = event_data["pull_request"]["review_comments_url"]
     commit_id = event_data["pull_request"]["head"]["sha"]

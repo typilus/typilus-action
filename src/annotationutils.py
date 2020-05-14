@@ -76,3 +76,12 @@ def group_suggestions(suggestions):
 
     sorted_suggestions = sorted(suggestions, key=key)
     return [list(it) for k, it in groupby(sorted_suggestions, key)]
+
+
+ALIASES = {"typing.Text": "str"}
+
+
+def annotation_rewrite(annotation: str) -> str:
+    for k, v in ALIASES.items():
+        annotation = annotation.replace(k, v)
+    return annotation
