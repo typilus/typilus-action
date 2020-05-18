@@ -56,7 +56,7 @@ def find_annotation_line(filepath, location, func_name):
         lines = f.readlines()
 
     print(lines[location[0] - 1])
-    print(location[1)
+    print(location[1])
     assert func_name in lines[location[0] - 1]
     # assert lines[location[0] - 1][location[1] :].startswith(func_name)
 
