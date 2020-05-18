@@ -14,7 +14,6 @@ outputs:
     description: 'Makes suggeted edits to the pull requests for adding Python Type annotations.'
 runs:
   using: 'docker'
-  # Once debugging is done, replace with docker.pkg.github.com/typilus/typilus-action/actionenv:latest
-  image: 'Dockerfile'
+  image: docker.pkg.github.com/typilus/typilus-action/actionenv:latest
   args:
     - ${{ inputs.path }}
