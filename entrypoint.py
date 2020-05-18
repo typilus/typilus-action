@@ -41,6 +41,13 @@ class TypeSuggestion:
         self.annotation_lineno = annotation_lineno
         self.is_disagreement = is_disagreement
 
+    def __repr__(self) -> str:
+        return (
+            f"Suggestion@{self.file_location}:{self.file_location} "
+            f"Symbol Name: `{self.name}` Suggestion `{self.suggestion}` "
+            f"Confidence: {self.confidence:.2%}"
+        )
+
 
 assert (
     os.environ["GITHUB_EVENT_NAME"] == "pull_request"
