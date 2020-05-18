@@ -54,7 +54,11 @@ def annotate_return(line, suggestion):
 def find_annotation_line(filepath, location, func_name):
     with open(filepath) as f:
         lines = f.readlines()
-    assert lines[location[0] - 1][location[1] :].startswith(func_name)
+
+    print(lines[location[0] - 1])
+    print(location[1)
+    assert func_name in lines[location[0] - 1]
+    # assert lines[location[0] - 1][location[1] :].startswith(func_name)
 
     # Assume that the function's return is *not* already annotated.
     func_def_end = re.compile(r"\)\s*:$")
