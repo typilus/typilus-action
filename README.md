@@ -6,7 +6,8 @@ This action makes suggestions within each pull request as
 [suggested edits](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/incorporating-feedback-in-your-pull-request#applying-a-suggested-change).
 You can then directly apply these suggestions to your code or ignore them.
 
-> TODO: Add a screenshot of an edit suggestion.
+| ![Sample Suggestion](/screenshot1.png) | ![Sample Suggestion](/screenshot2.png) |
+| -- | -- |
 
 ***What are Python type annotations?***
 Introduced in Python 3.5, [type hints](https://www.python.org/dev/peps/pep-0484/)
