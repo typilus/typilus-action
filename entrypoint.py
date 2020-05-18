@@ -183,8 +183,8 @@ with TemporaryDirectory() as out_dir:
 
     def report_confidence(suggestions):
         suggestions = sorted(suggestions, key=lambda s: -s.confidence)
-        return "\n ".join(
-            f"{bucket_confidences(s.confidence)} `{s.name}` has a type of `{s.suggestion}` with confidence {s.confidence:.0%}."
+        return "".join(
+            f"{bucket_confidences(s.confidence)} | `{s.name}` | `{s.suggestion}` | {s.confidence:.1%} | \n"
             for s in suggestions
         )
 
@@ -201,7 +201,10 @@ with TemporaryDirectory() as out_dir:
             "commit_id": commit_id,
             "body": "The following type annotation(s) might be useful:\n ```suggestion\n"
             f"{annotate_line(target_line, same_line_suggestions)}```\n"
-            f"##### Prediction probabilities\n {report_confidence(same_line_suggestions)}",
+            f"### :chart_with_upwards_trend: Prediction Stats\n"
+            f"| | Symbol | Annotation | |\n"
+            f"| -- | -- | -- | --: |\n"
+            f"{report_confidence(same_line_suggestions)}",
         }
         headers = {
             "authorization": f"Bearer {github_token}",
