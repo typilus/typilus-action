@@ -184,7 +184,7 @@ with TemporaryDirectory() as out_dir:
     def report_confidence(suggestions):
         suggestions = sorted(suggestions, key=lambda s: -s.confidence)
         return "".join(
-            f"`{s.name}` | `{s.suggestion}` | {bucket_confidences(s.confidence)} | {s.confidence:.1%} | \n"
+            f"| `{s.name}` | `{s.suggestion}` | {s.confidence:.1%} {bucket_confidences(s.confidence)} | \n"
             for s in suggestions
         )
 
@@ -202,8 +202,8 @@ with TemporaryDirectory() as out_dir:
             "body": "The following type annotation(s) might be useful:\n ```suggestion\n"
             f"{annotate_line(target_line, same_line_suggestions)}```\n"
             f"### :chart_with_upwards_trend: Prediction Stats\n"
-            f"| Symbol | Annotation | | Confidence |\n"
-            f"| -- | -- | -- | --: |\n"
+            f"| Symbol | Annotation | Confidence |\n"
+            f"| -- | -- | --: |\n"
             f"{report_confidence(same_line_suggestions)}",
         }
         headers = {
