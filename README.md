@@ -43,6 +43,7 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
+    steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so that typilus can access it.
     - uses: actions/checkout@v2
     - uses: typilus/typilus-action@master
