@@ -45,7 +45,6 @@ jobs:
 
     # Checks-out your repository under $GITHUB_WORKSPACE, so that typilus can access it.
     - uses: actions/checkout@v2
-    - run: echo ${{ secrets.GITHUB_TOKEN }} | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin  # Allow pulling Typilus container. Requires login.
     - uses: typilus/typilus-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
