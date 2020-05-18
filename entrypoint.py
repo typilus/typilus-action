@@ -127,6 +127,8 @@ with TemporaryDirectory() as out_dir:
                 and supernode_data["annotation"] != predicted_type,
             )
 
+            print("Suggestion: ", suggestion)
+
             if lineno not in changed_files[filepath]:
                 continue
 
