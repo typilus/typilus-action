@@ -182,9 +182,10 @@ with TemporaryDirectory() as out_dir:
         return ":question:"
 
     def report_confidence(suggestions):
-        suggestions = sorted(suggestions, key=lambda s: s.confidence)
+        suggestions = sorted(suggestions, key=lambda s: -s.confidence)
         return "\n ".join(
-            f"{bucket_confidences(s.confidence)} `{s.name}` {s.confidence:.0%}" for s in suggestions
+            f"{bucket_confidences(s.confidence)} `{s.name}` has a type of `{s.suggestion}` with confidence {s.confidence:.0%}."
+            for s in suggestions
         )
 
     for same_line_suggestions in grouped_suggestions:
@@ -200,7 +201,7 @@ with TemporaryDirectory() as out_dir:
             "commit_id": commit_id,
             "body": "The following type annotation(s) might be useful:\n ```suggestion\n"
             f"{annotate_line(target_line, same_line_suggestions)}```\n"
-            f"###### Prediction probabilities {report_confidence(same_line_suggestions)}",
+            f"##### Prediction probabilities\n {report_confidence(same_line_suggestions)}",
         }
         headers = {
             "authorization": f"Bearer {github_token}",
