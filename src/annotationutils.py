@@ -33,12 +33,12 @@ def annotate_parameters(line, suggestions):
     """
     Annotate the parameters of a function on a particular line
     """
-    annotated_line = line
+    annotated_line = " " + line
     length_increase = 0
     for s in suggestions:
         assert line[s.file_location[1] :].startswith(s.name)
         insertion_position = s.file_location[1] + len(s.name) + 1 + length_increase
-        annotated_line = insert_at(" " + annotated_line, f": {s.suggestion}", insertion_position)
+        annotated_line = insert_at(annotated_line, f": {s.suggestion}", insertion_position)
         length_increase += len(s.suggestion) + 2
     return annotated_line
 
@@ -55,10 +55,7 @@ def find_annotation_line(filepath, location, func_name):
     with open(filepath) as f:
         lines = f.readlines()
 
-    print(lines[location[0] - 1])
-    print(location[1])
     assert func_name in lines[location[0] - 1]
-    # assert lines[location[0] - 1][location[1] :].startswith(func_name)
 
     # Assume that the function's return is *not* already annotated.
     func_def_end = re.compile(r"\)\s*:$")
