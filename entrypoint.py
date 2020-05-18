@@ -46,7 +46,7 @@ assert (
     os.environ["GITHUB_EVENT_NAME"] == "pull_request"
 ), "This action runs only on pull request events."
 github_token = os.environ["GITHUB_TOKEN"]
-debug = True
+debug = False
 
 with open(os.environ["GITHUB_EVENT_PATH"]) as f:
     event_data = json.load(f)
@@ -78,8 +78,8 @@ if len(changed_files) == 0:
 
 
 monitoring = Monitoring()
-suggestion_confidence_threshold = float(os.getenv("SUGGESTION_CONFIDENCE_THRESHOLD", 0.0))
-diagreement_confidence_threshold = float(os.getenv("DISAGREEMENT_CONFIDENCE_THRESHOLD", 0.0))
+suggestion_confidence_threshold = float(os.getenv("SUGGESTION_CONFIDENCE_THRESHOLD", 0.5))
+diagreement_confidence_threshold = float(os.getenv("DISAGREEMENT_CONFIDENCE_THRESHOLD", 0.95))
 
 if debug:
     print(
@@ -130,15 +130,16 @@ with TemporaryDirectory() as out_dir:
             if lineno not in changed_files[filepath]:
                 continue
 
-            # TODO: Use confidence filtering!
             if (
                 supernode_data["annotation"] == "??"
-            ):  # and suggestion.confidence > suggestion_confidence_threshold:
+                and suggestion.confidence > suggestion_confidence_threshold
+            ):
                 type_suggestions.append(suggestion)
             elif (
                 suggestion.is_disagreement
-            ):  # and suggestion.confidence > diagreement_confidence_threshold:
-                type_suggestions.append(suggestion)
+                # and suggestion.confidence > diagreement_confidence_threshold
+            ):
+                pass  # TODO: Disabled for now: type_suggestions.append(suggestion)
 
     # Add PR comments
     if debug:

@@ -50,8 +50,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         MODEL_PATH: path/to/model.pkl.gz   # Optional: provide the path of a custom model instead of the pre-trained model.
-        SUGGESTION_CONFIDENCE_THRESHOLD: 0.8   # Configure this to limit the confidence of suggestions on un-annotated locations. A float in [0, 1].
-        DISAGREEMENT_CONFIDENCE_THRESHOLD: 0.95  # Configure this to limit the confidence of suggestions on annotated locations.  A float in [0, 1].
+        SUGGESTION_CONFIDENCE_THRESHOLD: 0.8   # Configure this to limit the confidence of suggestions on un-annotated locations. A float in [0, 1]. Default 0.8
+        DISAGREEMENT_CONFIDENCE_THRESHOLD: 0.95  # Configure this to limit the confidence of suggestions on annotated locations.  A float in [0, 1]. Default 0.95
 ```
 The action uses the `GITHUB_TOKEN` to retrieve the diff of the pull request
 and to post comments on the analyzed pull request.
