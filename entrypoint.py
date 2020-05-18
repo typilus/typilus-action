@@ -164,7 +164,7 @@ with TemporaryDirectory() as out_dir:
     for suggestion in type_suggestions:
         if suggestion.symbol_kind == "class-or-function":
             suggestion.annotation_lineno = find_annotation_line(
-                suggestion.filepath, suggestion.file_location, suggestion.name
+                suggestion.filepath[1:], suggestion.file_location, suggestion.name
             )
         else:  # when the underlying symbol is a parameter
             suggestion.annotation_lineno = suggestion.file_location[0]
