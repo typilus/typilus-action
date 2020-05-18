@@ -43,7 +43,7 @@ class TypeSuggestion:
 
     def __repr__(self) -> str:
         return (
-            f"Suggestion@{self.file_location}:{self.file_location} "
+            f"Suggestion@{self.filepath}:{self.file_location} "
             f"Symbol Name: `{self.name}` Suggestion `{self.suggestion}` "
             f"Confidence: {self.confidence:.2%}"
         )
@@ -137,6 +137,8 @@ with TemporaryDirectory() as out_dir:
             print("Suggestion: ", suggestion)
 
             if lineno not in changed_files[filepath]:
+                continue
+            elif suggestion.name == "%UNK%":
                 continue
 
             if (
