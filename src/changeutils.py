@@ -47,6 +47,8 @@ def get_changed_files(diff: str, suffix=".py") -> Dict[str, Set[int]]:
         elif file_diff_lines[1].startswith("similarity"):
             assert file_diff_lines[2].startswith("rename")
             assert file_diff_lines[3].startswith("rename")
+            if len(file_diff_lines) == 4:
+                continue # skip file renames \wo any changes
             assert file_diff_lines[4].startswith("index")
             assert file_diff_lines[5].startswith("--- a/")
             assert file_diff_lines[6].startswith("+++ b/")
