@@ -65,12 +65,12 @@ def explore_files(
         if not os.path.isfile(file_path):
             continue
         with open(file_path, encoding="utf-8", errors="ignore") as f:
-            monitoring.increment_count()
-            monitoring.enter_file(file_path)
-
             # import pdb; pdb.set_trace()
             if file_path[len(root_dir) :] not in files_to_extract:
                 continue
+
+            monitoring.increment_count()
+            monitoring.enter_file(file_path)
 
             graph = build_graph(f.read(), monitoring, type_lattice)
             if graph is None or len(graph["supernodes"]) == 0:
