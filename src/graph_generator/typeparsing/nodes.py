@@ -62,16 +62,17 @@ class SubscriptAnnotationNode(TypeAnnotationNode):
         return visitor.visit_subscript_annotation(self, *args)
 
     def __repr__(self):
-        return repr(self.value) + "[" + repr(self.slice) + "]"
+        return f"{repr(self.value)}[{repr(self.slice)}]"
 
     def __hash__(self):
         return hash(self.value) ^ (hash(self.slice) + 13)
 
     def __eq__(self, other):
-        if not isinstance(other, SubscriptAnnotationNode):
-            return False
-        else:
-            return self.value == other.value and self.slice == other.slice
+        return (
+            self.value == other.value and self.slice == other.slice
+            if isinstance(other, SubscriptAnnotationNode)
+            else False
+        )
 
     @staticmethod
     def parse(node) -> "SubscriptAnnotationNode":
@@ -98,16 +99,14 @@ class TupleAnnotationNode(TypeAnnotationNode):
         return ", ".join(repr(e) for e in self.elements)
 
     def __hash__(self):
-        if len(self.elements) > 0:
-            return hash(self.elements)
-        else:
-            return 1
+        return hash(self.elements) if len(self.elements) > 0 else 1
 
     def __eq__(self, other):
-        if not isinstance(other, TupleAnnotationNode):
-            return False
-        else:
-            return self.elements == other.elements
+        return (
+            self.elements == other.elements
+            if isinstance(other, TupleAnnotationNode)
+            else False
+        )
 
     @staticmethod
     def parse(node) -> "TupleAnnotationNode":
@@ -132,9 +131,11 @@ class NameAnnotationNode(TypeAnnotationNode):
         return hash(self.identifier)
 
     def __eq__(self, other):
-        if not isinstance(other, NameAnnotationNode):
-            return False
-        return self.identifier == other.identifier
+        return (
+            self.identifier == other.identifier
+            if isinstance(other, NameAnnotationNode)
+            else False
+        )
 
     @staticmethod
     def parse(node) -> "NameAnnotationNode":
@@ -156,15 +157,14 @@ class ListAnnotationNode(TypeAnnotationNode):
         return "[" + ", ".join(repr(e) for e in self.elements) + "]"
 
     def __hash__(self):
-        if len(self.elements) > 0:
-            return hash(self.elements)
-        else:
-            return 2
+        return hash(self.elements) if len(self.elements) > 0 else 2
 
     def __eq__(self, other):
-        if not isinstance(other, ListAnnotationNode):
-            return False
-        return self.elements == other.elements
+        return (
+            self.elements == other.elements
+            if isinstance(other, ListAnnotationNode)
+            else False
+        )
 
     @staticmethod
     def parse(node) -> "ListAnnotationNode":
@@ -185,16 +185,17 @@ class AttributeAnnotationNode(TypeAnnotationNode):
         return visitor.visit_attribute_annotation(self, *args)
 
     def __repr__(self):
-        return repr(self.value) + "." + self.attribute
+        return f"{repr(self.value)}.{self.attribute}"
 
     def __hash__(self):
         return hash(self.attribute) ^ (hash(self.value) + 13)
 
     def __eq__(self, other):
-        if not isinstance(other, AttributeAnnotationNode):
-            return False
-        else:
-            return self.attribute == other.attribute and self.value == other.value
+        return (
+            self.attribute == other.attribute and self.value == other.value
+            if isinstance(other, AttributeAnnotationNode)
+            else False
+        )
 
     @staticmethod
     def parse(node) -> "AttributeAnnotationNode":
@@ -220,9 +221,11 @@ class IndexAnnotationNode(TypeAnnotationNode):
         return hash(self.value)
 
     def __eq__(self, other):
-        if not isinstance(other, IndexAnnotationNode):
-            return False
-        return self.value == other.value
+        return (
+            self.value == other.value
+            if isinstance(other, IndexAnnotationNode)
+            else False
+        )
 
     @staticmethod
     def parse(node) -> "IndexAnnotationNode":
@@ -271,9 +274,11 @@ class NameConstantAnnotationNode(TypeAnnotationNode):
         return hash(self.value)
 
     def __eq__(self, other):
-        if not isinstance(other, NameConstantAnnotationNode):
-            return False
-        return self.value == other.value
+        return (
+            self.value == other.value
+            if isinstance(other, NameConstantAnnotationNode)
+            else False
+        )
 
     @staticmethod
     def parse(node) -> "NameConstantAnnotationNode":
@@ -345,11 +350,11 @@ def parse_type_annotation_node(node) -> Optional[TypeAnnotationNode]:
     Processes the node containing the type annotation and return the object corresponding to the node type.
     """
     try:
-        if isinstance(node, str):
-            r = parse_type_comment(node)
-        else:
-            r = _parse_recursive(node)
-        return r
+        return (
+            parse_type_comment(node)
+            if isinstance(node, str)
+            else _parse_recursive(node)
+        )
     except Exception as e:
         pass
     return None
