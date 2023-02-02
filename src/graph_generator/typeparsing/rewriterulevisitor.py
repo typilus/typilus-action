@@ -22,10 +22,14 @@ class RewriteRuleVisitor(TypeAnnotationVisitor):
     def __apply_on_match(
         self, original_node: TypeAnnotationNode, parent: TypeAnnotationNode
     ) -> TypeAnnotationNode:
-        for rule in self.__rules:
-            if rule.matches(original_node, parent):
-                return rule.apply(original_node)
-        return original_node
+        return next(
+            (
+                rule.apply(original_node)
+                for rule in self.__rules
+                if rule.matches(original_node, parent)
+            ),
+            original_node,
+        )
 
     def visit_subscript_annotation(
         self, node: SubscriptAnnotationNode, parent: TypeAnnotationNode

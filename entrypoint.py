@@ -103,8 +103,7 @@ with TemporaryDirectory() as out_dir:
     def data_iter():
         for datafile_path in iglob(os.path.join(out_dir, "*.jsonl.gz")):
             print(f"Looking into {datafile_path}...")
-            for graph in load_jsonl_gz(datafile_path):
-                yield graph
+            yield from load_jsonl_gz(datafile_path)
 
     model_path = os.getenv("MODEL_PATH", "/usr/src/model.pkl.gz")
     model, nn = Graph2Class.restore_model(model_path, "cpu")
@@ -177,9 +176,7 @@ with TemporaryDirectory() as out_dir:
             return ":fire:"
         if confidence >= 0.85:
             return ":bell:"
-        if confidence >= 0.7:
-            return ":confused:"
-        return ":question:"
+        return ":confused:" if confidence >= 0.7 else ":question:"
 
     def report_confidence(suggestions):
         suggestions = sorted(suggestions, key=lambda s: -s.confidence)

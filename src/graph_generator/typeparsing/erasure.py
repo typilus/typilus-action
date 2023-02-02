@@ -25,12 +25,16 @@ class EraseOnceTypeRemoval(TypeAnnotationVisitor):
         else:
             next_slices, erasure_happened_at_a_slice = node.slice.accept_visitor(self)
 
-        if not erasure_happened_at_a_slice:
-            return [node, node.value], True  # Erase type parameters
-
         return (
-            [SubscriptAnnotationNode(value=node.value, slice=s) for s in next_slices],
-            True,
+            (
+                [
+                    SubscriptAnnotationNode(value=node.value, slice=s)
+                    for s in next_slices
+                ],
+                True,
+            )
+            if erasure_happened_at_a_slice
+            else ([node, node.value], True)
         )
 
     def visit_tuple_annotation(self, node: TupleAnnotationNode):

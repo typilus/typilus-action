@@ -246,7 +246,7 @@ class DataflowPass(NodeVisitor):
 
         before_exec_handlers = self.__clone_last_uses()
         after_exec_handlers = self.__clone_last_uses()
-        for i, exc_handler in enumerate(node.handlers):
+        for exc_handler in node.handlers:
             self.visit(exc_handler)
             after_exec_handlers = self.__merge_uses(after_exec_handlers, self.__last_use)
             self.__last_use = before_exec_handlers
@@ -297,7 +297,7 @@ class DataflowPass(NodeVisitor):
         self.__visit_with(node)
 
     def __visit_with(self, node: Union[With, AsyncWith]):
-        for i, w_item in enumerate(node.items):
+        for w_item in node.items:
             self.visit(w_item)
         self.__visit_statement_block(node.body)
 
@@ -325,14 +325,14 @@ class DataflowPass(NodeVisitor):
         self.visit(node.value)
 
         for target in node.targets:
-            if isinstance(target, Attribute) or isinstance(target, Name):
+            if isinstance(target, (Attribute, Name)):
                 self.__visit_variable_like(target, node)
             else:
                 self.visit(target)
 
     def visit_AugAssign(self, node: AugAssign):
         self.visit(node.value)
-        if isinstance(node.target, Name) or isinstance(node.target, Attribute):
+        if isinstance(node.target, (Name, Attribute)):
             self.__visit_variable_like(node.target, node)
         else:
             self.visit(node.target)
@@ -430,16 +430,16 @@ class DataflowPass(NodeVisitor):
         self.visit(node.right)
 
     def visit_BoolOp(self, node):
-        for idx, value in enumerate(node.values):
+        for value in node.values:
             self.visit(value)
 
     def visit_Compare(self, node: Compare):
         self.visit(node.left)
-        for i, (op, right) in enumerate(zip(node.ops, node.comparators)):
+        for op, right in zip(node.ops, node.comparators):
             self.visit(right)
 
     def visit_Delete(self, node: Delete):
-        for i, target in enumerate(node.targets):
+        for target in node.targets:
             self.visit(target)
 
     def visit_Global(self, node: Global):
@@ -492,7 +492,7 @@ class DataflowPass(NodeVisitor):
         self.__sequence_datastruct_visit(node)
 
     def __sequence_datastruct_visit(self, node):
-        for idx, element in enumerate(node.elts):
+        for element in node.elts:
             self.visit(element)
 
     # endregion

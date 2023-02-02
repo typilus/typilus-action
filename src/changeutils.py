@@ -9,8 +9,7 @@ def get_line_ranges_of_interest(diff_lines: List[str]) -> Set[int]:
     lines_of_interest = set()
     current_line = 0
     for line in diff_lines:
-        hunk_start_match = HUNK_MATCH.match(line)
-        if hunk_start_match:
+        if hunk_start_match := HUNK_MATCH.match(line):
             current_line = int(hunk_start_match.group(1))
         elif line.startswith("+"):
             lines_of_interest.add(current_line)

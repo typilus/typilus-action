@@ -37,12 +37,10 @@ class StrSymbol:
         return hash(self.name)
 
     def __eq__(self, other):
-        if not isinstance(other, StrSymbol):
-            return False
-        return self.name == other.name
+        return self.name == other.name if isinstance(other, StrSymbol) else False
 
     def __str__(self):
-        return "Symbol: " + self.name
+        return f"Symbol: {self.name}"
 
 
 class SymbolInformation(NamedTuple):

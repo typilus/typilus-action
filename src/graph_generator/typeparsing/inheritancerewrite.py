@@ -41,9 +41,7 @@ class DirectInheritanceRewriting(TypeAnnotationVisitor):
             if v in self.__non_generic_types:
                 all_children.append(v)
                 continue
-            for s in slice_node_options:
-                all_children.append(SubscriptAnnotationNode(v, s))
-
+            all_children.extend(SubscriptAnnotationNode(v, s) for s in slice_node_options)
         return all_children
 
     def visit_tuple_annotation(self, node: TupleAnnotationNode):
@@ -67,8 +65,7 @@ class DirectInheritanceRewriting(TypeAnnotationVisitor):
         return r
 
     def visit_attribute_annotation(self, node: AttributeAnnotationNode):
-        v = [node] + list(self.__is_a(node))
-        return v
+        return [node] + list(self.__is_a(node))
 
     def visit_index_annotation(self, node: IndexAnnotationNode):
         next_values = node.value.accept_visitor(self)
