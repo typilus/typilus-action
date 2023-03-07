@@ -31,13 +31,15 @@ positives.
 
 To use the GitHub action, create a workflow file. For example,
 ```yaml
-name: Typilus Type Annotation Suggestions
+name: Suggest Annotation using AI
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on:
   pull_request:
-    branches: [ master ]
+    paths:
+      - '**.py'
+    branches: [master, main]
 
 jobs:
   suggest:
@@ -46,8 +48,8 @@ jobs:
 
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so that typilus can access it.
-    - uses: actions/checkout@v2
-    - uses: typilus/typilus-action@master
+    - uses: actions/checkout@v3
+    - uses: typilus/typilus-action@v1.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         MODEL_PATH: path/to/model.pkl.gz   # Optional: provide the path of a custom model instead of the pre-trained model.
