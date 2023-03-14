@@ -212,6 +212,7 @@ try:
                 print("URL: ", comment_url)
                 print(f"Data: {data}. Status Code: {r.status_code}. Text: {r.text}")
 except AssertionError:
+    import traceback
     _, _, tb = sys.exc_info()
     traceback.print_tb(tb) # Fixed format
     tb_info = traceback.extract_tb(tb)
