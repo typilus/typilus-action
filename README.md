@@ -27,14 +27,14 @@ suggestions with only a partial context, at the cost of suggesting some false
 positives.
 
 
-### Install Action in your Repository
+### How to use the Action in your Repository
 
 To use the GitHub action, create a workflow file. For example,
 ```yaml
-name: Suggest Annotation using AI
+name: Annotation Suggestions
 
 # Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
+# events but only for the main branch
 on:
   pull_request:
     paths:
@@ -49,10 +49,9 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so that typilus can access it.
     - uses: actions/checkout@v3
-    - uses: typilus/typilus-action@v1.0
+    - uses: Karim-53/typilus-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        MODEL_PATH: path/to/model.pkl.gz   # Optional: provide the path of a custom model instead of the pre-trained model.
         SUGGESTION_CONFIDENCE_THRESHOLD: 0.8   # Configure this to limit the confidence of suggestions on un-annotated locations. A float in [0, 1]. Default 0.8
         DISAGREEMENT_CONFIDENCE_THRESHOLD: 0.95  # Configure this to limit the confidence of suggestions on annotated locations.  A float in [0, 1]. Default 0.95
 ```
