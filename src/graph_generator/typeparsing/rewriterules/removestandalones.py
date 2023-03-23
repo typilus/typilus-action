@@ -18,11 +18,7 @@ class RemoveStandAlones(RewriteRule):
     ANY_NODE = parse_type_annotation_node("typing.Any")
 
     def matches(self, node: TypeAnnotationNode, parent: Optional[TypeAnnotationNode]) -> bool:
-        if (
-            not node == self.UNION_NODE
-            and not node == self.OPTIONAL_NODE
-            and not node == self.GENERIC_NODE
-        ):
+        if node not in [self.UNION_NODE, self.OPTIONAL_NODE, self.GENERIC_NODE]:
             return False
         return not isinstance(parent, SubscriptAnnotationNode)
 

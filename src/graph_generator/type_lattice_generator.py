@@ -78,7 +78,7 @@ class TypeLatticeGenerator:
                 RemoveGenericWithAnys(),
             ]
         )
-        assert len(self.__ids_to_nodes) == len(set(repr(r) for r in self.__ids_to_nodes))
+        assert len(self.__ids_to_nodes) == len({repr(r) for r in self.__ids_to_nodes})
 
     def create_alias_replacement(
         self, imported_symbols: Dict[TypeAnnotationNode, TypeAnnotationNode]
@@ -100,7 +100,7 @@ class TypeLatticeGenerator:
             self.__all_types[parse_type_annotation_node("typing.Tuple")],
             self.__all_types[parse_type_annotation_node("typing.Callable")],
         ]
-        while len(to_visit) > 0:
+        while to_visit:
             next_node = to_visit.pop()
             generic_transitive_closure.add(next_node)
             to_visit.extend(
@@ -129,7 +129,7 @@ class TypeLatticeGenerator:
     def __all_reachable_from(self, type_idx: int) -> FrozenSet[int]:
         reachable = set()
         to_visit = [type_idx]  # type: List[int]
-        while len(to_visit) > 0:
+        while to_visit:
             next_type_idx = to_visit.pop()
             reachable.add(next_type_idx)
             to_visit.extend(
@@ -195,7 +195,7 @@ class TypeLatticeGenerator:
 
     def build_graph(self):
         print(
-            "Building type graph for project... (%s elements to process)" % len(self.__to_process)
+            f"Building type graph for project... ({len(self.__to_process)} elements to process)"
         )
         i = 0
 
@@ -208,8 +208,7 @@ class TypeLatticeGenerator:
             i += 1
             if i > 500:
                 print(
-                    "Building type graph for project... (%s elements to process)"
-                    % len(self.__to_process)
+                    f"Building type graph for project... ({len(self.__to_process)} elements to process)"
                 )
                 i = 0
                 if len(self.__to_process) > 3000:
@@ -230,22 +229,21 @@ class TypeLatticeGenerator:
             )
             was_rewritten = len(all_inherited_types_and_self) > 1
 
-            if was_rewritten:
-                if (
-                    not erasure_happened
-                    or len(self.__to_process) < 5000
-                    or len(all_inherited_types_and_self) < 5
-                ):
-                    for type_annotation in all_inherited_types_and_self:
-                        type_annotation = type_annotation.accept_visitor(
-                            self.__max_depth_pruning_visitor, self.__max_annotation_depth,
-                        )
-                        type_annotation = self.__rewrite_verbose(type_annotation)
-                        type_has_been_seen = type_annotation in self.__all_types
+            if was_rewritten and (
+                not erasure_happened
+                or len(self.__to_process) < 5000
+                or len(all_inherited_types_and_self) < 5
+            ):
+                for type_annotation in all_inherited_types_and_self:
+                    type_annotation = type_annotation.accept_visitor(
+                        self.__max_depth_pruning_visitor, self.__max_annotation_depth,
+                    )
+                    type_annotation = self.__rewrite_verbose(type_annotation)
+                    type_has_been_seen = type_annotation in self.__all_types
 
-                        if not type_has_been_seen:
-                            self.__add_is_a_relationship(next_type, type_annotation)
-                            self.__to_process.append(type_annotation)
+                    if not type_has_been_seen:
+                        self.__add_is_a_relationship(next_type, type_annotation)
+                        self.__to_process.append(type_annotation)
 
             if not was_rewritten and not erasure_happened:
                 # Add a rule to Any
@@ -281,11 +279,11 @@ class TypeLatticeGenerator:
     def return_json(self) -> Dict[str, Any]:
         edges = []
         for from_type_idx, to_type_idxs in self.is_a_edges.items():
-            for to_type_idx in to_type_idxs:
-                edges.append((from_type_idx, to_type_idx))
-
-        assert len(self.__ids_to_nodes) == len(set(repr(r) for r in self.__ids_to_nodes))
+            edges.extend((from_type_idx, to_type_idx) for to_type_idx in to_type_idxs)
+        assert len(self.__ids_to_nodes) == len({repr(r) for r in self.__ids_to_nodes})
         return {
-            "nodes": list((repr(type_annotation) for type_annotation in self.__ids_to_nodes)),
+            "nodes": [
+                repr(type_annotation) for type_annotation in self.__ids_to_nodes
+            ],
             "edges": edges,
         }

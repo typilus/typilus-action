@@ -181,7 +181,7 @@ class AstGraphGenerator(NodeVisitor):
 
             return {
                 "name": sinfo.name,
-                "annotation": None if not has_annotation else annotation_str,
+                "annotation": annotation_str if has_annotation else None,
                 "location": first_annotatable_location,
                 "type": sinfo.symbol_type,
             }
@@ -222,9 +222,7 @@ class AstGraphGenerator(NodeVisitor):
                 return False
             if keyword.iskeyword(str(n)):
                 return False
-            if n == self.INDENT or n == self.DEDENT or n == self.NLINE:
-                return False
-            return True
+            return n not in [self.INDENT, self.DEDENT, self.NLINE]
 
         all_identifier_like_nodes: Set[TokenNode] = {
             n for n in self.__node_to_id if is_identifier_node(n)
@@ -275,7 +273,7 @@ class AstGraphGenerator(NodeVisitor):
         parent = self.__current_parent_node
         self.__current_parent_node = node
         try:
-            method = "visit_" + node.__class__.__name__
+            method = f"visit_{node.__class__.__name__}"
             visitor = getattr(self, method, self.generic_visit)
             if visitor == self.generic_visit:
                 logging.warning("Unvisited AST type: %s", node.__class__.__name__)
@@ -373,7 +371,7 @@ class AstGraphGenerator(NodeVisitor):
                 and name.startswith("__")
                 and not name.endswith("__")
             ):
-                name = "_" + self.__scope_symtable[-1].get_name() + name
+                name = f"_{self.__scope_symtable[-1].get_name()}{name}"
 
             current_idx = len(self.__scope_symtable) - 1
             while current_idx >= 0:
@@ -658,7 +656,6 @@ class AstGraphGenerator(NodeVisitor):
             and hasattr(node.value, "func")
             and hasattr(node.value.func, "id")
             and node.value.func.id == "NewType"
-            and hasattr(node, "value")
             and hasattr(node.value, "args")
             and len(node.value.args) == 2
         ):
@@ -673,7 +670,7 @@ class AstGraphGenerator(NodeVisitor):
             assert False
 
         for i, target in enumerate(node.targets):
-            if isinstance(target, Attribute) or isinstance(target, Name):
+            if isinstance(target, (Attribute, Name)):
                 self.__visit_variable_like(
                     target,
                     target.lineno,
@@ -696,7 +693,7 @@ class AstGraphGenerator(NodeVisitor):
         self.visit(node.value)
 
     def visit_AugAssign(self, node: AugAssign):
-        if isinstance(node.target, Name) or isinstance(node.target, Attribute):
+        if isinstance(node.target, (Name, Attribute)):
             self.__visit_variable_like(
                 node.target, node.lineno, node.col_offset, can_annotate_here=False
             )
@@ -704,7 +701,7 @@ class AstGraphGenerator(NodeVisitor):
             self.visit(node.target)
         self._add_edge(node.target, node.value, EdgeType.COMPUTED_FROM)
 
-        self.add_terminal(TokenNode(self.BINOP_SYMBOLS[type(node.op)] + "="))
+        self.add_terminal(TokenNode(f"{self.BINOP_SYMBOLS[type(node.op)]}="))
         self.visit(node.value)
 
     def visit_AnnAssign(self, node: AnnAssign):
@@ -729,7 +726,7 @@ class AstGraphGenerator(NodeVisitor):
     def visit_ImportFrom(self, node: ImportFrom):
         for alias in node.names:
             if node.module is not None:
-                name = parse_type_annotation_node(node.module + "." + alias.name)
+                name = parse_type_annotation_node(f"{node.module}.{alias.name}")
             else:
                 name = parse_type_annotation_node(alias.name)
             if alias.asname:
@@ -965,7 +962,7 @@ class AstGraphGenerator(NodeVisitor):
 
     def visit_Compare(self, node: Compare):
         self.visit(node.left)
-        for i, (op, right) in enumerate(zip(node.ops, node.comparators)):
+        for op, right in zip(node.ops, node.comparators):
             self.add_terminal(TokenNode(self.CMPOP_SYMBOLS[type(op)]))
             self.visit(right)
 
@@ -1048,12 +1045,12 @@ class AstGraphGenerator(NodeVisitor):
         self.add_terminal(TokenNode("}"))
 
     def visit_FormattedValue(self, node: FormattedValue):
-        self.add_terminal(TokenNode(str('f"')))
+        self.add_terminal(TokenNode('f"'))
         self.visit(node.value)
         if node.format_spec is not None:
-            self.add_terminal(TokenNode(str(":")))
+            self.add_terminal(TokenNode(":"))
             self.visit(node.format_spec)
-        self.add_terminal(TokenNode(str('"')))
+        self.add_terminal(TokenNode('"'))
 
     def visit_List(self, node):
         self.__sequence_datastruct_visit(node, "[", "]")
@@ -1066,7 +1063,7 @@ class AstGraphGenerator(NodeVisitor):
 
     def __sequence_datastruct_visit(self, node, open_brace: str, close_brace: str):
         self.add_terminal(TokenNode(open_brace))
-        for idx, element in enumerate(node.elts):
+        for element in node.elts:
             self.visit(element)
             self.add_terminal(
                 TokenNode(",")
@@ -1090,9 +1087,7 @@ class AstGraphGenerator(NodeVisitor):
         self.add_terminal(TokenNode(repr(node.n)))
 
     def visit_Str(self, node: Str):
-        self.add_terminal(
-            TokenNode('"' + node.s + '"')
-        )  # Approximate quote addition, but should be good enough.
+        self.add_terminal(TokenNode(f'"{node.s}"'))
 
     # endregion
 
@@ -1111,7 +1106,7 @@ class AstGraphGenerator(NodeVisitor):
         elif node is None:
             return "None"
         else:
-            raise Exception("Unrecognized node type %s" % type(node))
+            raise Exception(f"Unrecognized node type {type(node)}")
 
     def to_dot(
         self,
@@ -1130,8 +1125,8 @@ class AstGraphGenerator(NodeVisitor):
                     nodes_to_be_drawn.add(to_idx)
 
         with open(filename, "w") as f:
-            if len(initial_comment) > 0:
-                f.write("#" + initial_comment)
+            if initial_comment != "":
+                f.write(f"#{initial_comment}")
                 f.write("\n")
             f.write("digraph program {\n")
             for node, node_idx in self.__node_to_id.items():

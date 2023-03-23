@@ -9,8 +9,7 @@ def get_line_ranges_of_interest(diff_lines: List[str]) -> Set[int]:
     lines_of_interest = set()
     current_line = 0
     for line in diff_lines:
-        hunk_start_match = HUNK_MATCH.match(line)
-        if hunk_start_match:
+        if hunk_start_match := HUNK_MATCH.match(line):
             current_line = int(hunk_start_match.group(1))
         elif line.startswith("+"):
             lines_of_interest.add(current_line)
@@ -47,6 +46,8 @@ def get_changed_files(diff: str, suffix=".py") -> Dict[str, Set[int]]:
         elif file_diff_lines[1].startswith("similarity"):
             assert file_diff_lines[2].startswith("rename")
             assert file_diff_lines[3].startswith("rename")
+            if len(file_diff_lines) == 4:
+                continue # skip file renames \wo any changes
             assert file_diff_lines[4].startswith("index")
             assert file_diff_lines[5].startswith("--- a/")
             assert file_diff_lines[6].startswith("+++ b/")

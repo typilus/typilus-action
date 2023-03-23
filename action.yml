@@ -1,6 +1,6 @@
 # action.yml
-name: 'Typilus: Suggest Python Type Annotations'
-description: 'Suggest Likely Python Type Annotations'
+name: 'Typilus: Suggest Python Type Annotations with AI (fix)'
+description: 'Suggest Likely Python Type Annotations using AI'
 branding:
     icon: box
     color: gray-dark

@@ -5,11 +5,9 @@ from itertools import groupby
 
 
 def find_suggestion_for_return(suggestions):
-    for s in suggestions:
-        if s.symbol_kind == "class-or-function":
-            return s
-    else:
-        return None
+    return next(
+        (s for s in suggestions if s.symbol_kind == "class-or-function"), None
+    )
 
 
 def annotate_line(line, suggestions):
@@ -33,7 +31,7 @@ def annotate_parameters(line, suggestions):
     """
     Annotate the parameters of a function on a particular line
     """
-    annotated_line = " " + line
+    annotated_line = f" {line}"
     length_increase = 0
     for s in suggestions:
         assert line[s.file_location[1] :].startswith(s.name)
@@ -48,7 +46,7 @@ def annotate_return(line, suggestion):
     Annotate the return of a function
     """
     assert line.rstrip().endswith(":")
-    return line.rstrip()[:-1] + f" -> {suggestion.suggestion}" + ":\n"
+    return f"{line.rstrip()[:-1]} -> {suggestion.suggestion}" + ":\n"
 
 
 def find_annotation_line(filepath, location, func_name):
