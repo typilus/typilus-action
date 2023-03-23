@@ -37,8 +37,6 @@ name: Annotation Suggestions
 # events but only for the main branch
 on:
   pull_request:
-    paths:
-      - '**.py'
     branches: [master, main]
 
 jobs:
